@@ -126,6 +126,20 @@ name {
   -webkit-transition: opacity .2s ease-in-out;
 }
 
+.circular--portrait {
+  position: relative;
+  width: 200px;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.circular--portrait img {
+  width: auto;
+  height: auto;
+}
+
 span.highlight {
   background-color: #ffffd0;
 }
+
