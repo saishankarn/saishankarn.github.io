@@ -67,6 +67,7 @@
 
   .problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 10px; }
   .pcard { border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; background: #fff; }
+  h4.sub { font-size: 19px; line-height: 1.3; margin: 34px 0 8px; font-weight: 900; }
   .pcard .num { font-size: 12px; font-weight: 900; color: var(--red); letter-spacing: 1px; text-transform: uppercase; }
   .pcard h4 { margin: 2px 0 8px; font-size: 17px; line-height: 1.3; }
   .pcard svg { width: 100%; height: auto; display: block; margin: 4px 0 10px; }
@@ -128,7 +129,8 @@
   .cmp { max-width: 520px; }
   .cmp th { text-transform: none; font-size: 14px; letter-spacing: 0; color: var(--ink); }
   .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .m-only { display: none; }
+  .m-only, .m-inline { display: none; }
+  .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
   footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }
 
@@ -140,6 +142,8 @@
     .fig-row, .duo { grid-template-columns: 1fr; }
     .d-only { display: none; }
     .m-only { display: block; }
+    .m-inline { display: inline; }
+    .scrollx img { min-width: 760px; }
     .m-only svg { max-width: 420px; margin: 0 auto; }
     .prompt { font-size: 16.5px; }
     .keyobs { font-size: 17.5px; }
@@ -275,7 +279,7 @@
 
   <div class="box obs">
     <span class="lbl">Observation: image metrics do not transfer</span>
-    <p>FID only compares the distributions of real and generated samples. A generator that swaps the conditions, producing ventricular fibrillation when asked for a normal ECG and vice versa, gets the same score as a correct one. We propose the Joint Fréchet Time Series Distance (J-FTSD), which embeds each time series together with its metadata, using encoders trained contrastively as in CLIP. Samples that do not match their metadata are penalized.</p>
+    <p>FID only compares the distributions of real and generated samples. A generator that swaps the conditions, producing ventricular fibrillation when asked for a normal ECG and vice versa, gets the same score as a correct one. FID does not check whether a sample matches its metadata.</p>
   </div>
 
   <figure class="card">
@@ -283,12 +287,39 @@
     <figcaption>Generator B swaps the conditions but receives the same FID as Generator A.</figcaption>
   </figure>
 
+  <h4 class="sub">Our metric: Joint Fréchet Time Series Distance (J-FTSD)</h4>
+  <p>J-FTSD works like FID, but it compares real and synthesized data in a joint space of time series <i>and</i> metadata. It is computed in two steps.</p>
+
+  <p><b>Step 1: Learn a joint embedding of time series and metadata.</b> We train two encoders together, φ<sub>time</sub> for time series and φ<sub>meta</sub> for metadata, on aligned patches of the same time window. Within a batch, each time series patch should be most similar to its own metadata patch (the diagonal of the similarity matrix) and less similar to all other metadata patches. This is the same training objective that CLIP uses for images and text.</p>
+
+  <figure class="card" style="max-width:680px;margin-left:auto;margin-right:auto">
+    <img src="img/ts_clip.gif" width="1100" height="831" alt="Animation: training the time series and metadata encoders with a contrastive objective" loading="lazy">
+    <figcaption>Training the encoders on a toy example. The first half of the series is a triangle wave and the second half is a sine wave, and the metadata labels each half. Matching time series and metadata patches lie on the diagonal (orange).</figcaption>
+  </figure>
+
+  <p><b>Step 2: Compare real and synthesized data in this space.</b> We embed the real time series, the synthesized time series, and their shared metadata, and concatenate each time series embedding with its metadata embedding. We then fit a Gaussian to the real set and to the synthesized set, and compute the Fréchet distance between the two, as in FID. Lower is better.</p>
+
   <figure class="wide">
-    <div class="fig-row">
-      <div><img src="img/tw_qualitative.jpg" width="1800" height="944" alt="Time Weaver and GAN samples on four datasets" loading="lazy"></div>
-      <div><img src="img/tw_results.jpg" width="1200" height="728" alt="Improvement of Time Weaver over GANs on J-FTSD and TSTR" loading="lazy"></div>
-    </div>
-    <figcaption><b>Left:</b> samples for unseen test metadata, Time Weaver (top) and a GAN (bottom); real in blue, generated in red. <b>Right:</b> improvement over state-of-the-art GANs on J-FTSD and on TSTR (train on synthetic data, test on real data).</figcaption>
+    <div class="scrollx"><img src="img/jftsd.gif" width="1500" height="590" alt="Animation: computing J-FTSD from real time series, metadata, and synthesized time series" loading="lazy"></div>
+    <figcaption>Computing J-FTSD. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  </figure>
+
+  <p>Because the encoders are trained to link time series features to metadata, the joint embedding captures how the two are correlated. If a synthesized series lacks the features that its metadata implies, this correlation is lost and J-FTSD increases.</p>
+
+  <figure class="wide">
+    <img src="img/tw_metrics.jpg" width="2000" height="522" alt="Sensitivity of distance metrics to four perturbations on the Air Quality dataset" loading="lazy">
+    <figcaption>Sensitivity of distance metrics on the Air Quality dataset as we add Gaussian noise, warp, impute, or randomly change the metadata (left to right). J-FTSD (red) is the most sensitive in every case, and it is the only metric that responds when the metadata is changed.</figcaption>
+  </figure>
+
+  <h4 class="sub">Results</h4>
+  <figure class="wide">
+    <img src="img/tw_qualitative_paper.jpg" width="2000" height="1073" alt="Time Weaver and GAN samples and value histograms on four datasets" loading="lazy">
+    <figcaption>Real (blue) and generated (red) data for unseen test metadata on four datasets. <b>Rows 1–2:</b> samples from Time Weaver and from the best-performing GAN. <b>Rows 3–4:</b> histograms of the real and generated values over each dataset. The GAN fails to match the real distribution, especially on Air Quality and Traffic.</figcaption>
+  </figure>
+
+  <figure style="max-width:460px;margin-left:auto;margin-right:auto">
+    <img src="img/tw_results.jpg" width="1200" height="728" alt="Improvement of Time Weaver over GANs on J-FTSD and TSTR" loading="lazy">
+    <figcaption>Improvement over state-of-the-art GANs on J-FTSD and on TSTR (train on synthetic data, test on real data).</figcaption>
   </figure>
 
   <div class="stats">
@@ -330,8 +361,8 @@
   </figure>
 
   <figure class="wide">
-    <img src="img/cps_more_constraints.jpg" width="2000" height="818" alt="As constraints are added, CPS samples track the real series" loading="lazy">
-    <figcaption>Constraints are added from left to right. CPS (bottom row, red) tracks the real series (blue) more closely as constraints are added, while the baselines degrade.</figcaption>
+    <img src="img/cps_more_constraints.gif" width="1500" height="614" alt="Animation: constraints are added one at a time, and CPS samples track the real series more closely" loading="lazy">
+    <figcaption>Constraints are added one at a time, from left to right. As more constraints are added, CPS (bottom row, red) tracks the real series (blue) more closely, while the baselines, Guided DiffTime and COP, degrade.</figcaption>
   </figure>
 
   <div class="stats">
@@ -399,9 +430,9 @@
     <figcaption>LLM-generated annotations for US gasoline prices in 2022. The text foreshadows the trend (green: rising, red: falling).</figcaption>
   </figure>
 
-  <figure style="max-width:640px;margin-left:auto;margin-right:auto">
-    <img src="img/coco_results.jpg" width="1500" height="717" alt="MAE improvement of CoCo over Chronos2 and GPT-4o by domain" loading="lazy">
-    <figcaption>Improvement in mean absolute error (MAE) of CoCo over a TSFM (Chronos2, blue) and an LLM (GPT-4o, red) in each domain.</figcaption>
+  <figure class="wide">
+    <img src="img/coco_rank_mae.jpg" width="2000" height="735" alt="Average rank and mean MAE of CoCo and 26 baselines across 30 datasets" loading="lazy">
+    <figcaption>Average rank (top) and mean absolute error, MAE (bottom), across 30 datasets and 95 settings, compared with 26 approaches grouped by type (one baseline is omitted for scale). Lower is better for both. CoCo has the best average rank and the lowest mean MAE.</figcaption>
   </figure>
 
   <div class="stats">
