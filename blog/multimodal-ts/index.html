@@ -485,8 +485,8 @@
 <p>Each type of context needs its own mechanism, but the principle is the same in all three papers: model the time series together with the information that determines how it evolves. The same principle also applies to evaluation, as J-FTSD shows, and to data collection, as the synthetic annotations in CoCo show.</p>
 
 <h2 id="more">More from our group</h2>
-<p>Additionally, check out our work on causal discovery (ALICE) and on extending Time Weaver's essence to the RF domain (ALF).</p>
-<div class="papers two">
+<p>Additionally, check out our work on causal discovery (ALICE), on extending Time Weaver's essence to the RF domain (ALF), and on extending our time series CLIP and J-FTSD to radar signals (CPIP).</p>
+<div class="papers">
   <div class="paper">
     <div class="venue">Submitted to ICLR 2027</div>
     <div class="ttl">ALICE: Amortized Learning for Invariance-aware Causal Estimation</div>
@@ -500,6 +500,12 @@
     <div class="auth">Yiyang Li*, Sai Shankar Narasimhan*, Priam Alataris, Avi Bagchi, Kaushik Chowdhury, Sanjay Shakkottai</div>
     <div class="ctx">Label-conditioned generation of wireless (RF) signals with a latent flow model that uses the spectrogram as an intermediate space. ALF reaches 84.5% train-on-synthetic, test-on-real accuracy, with a 100&times; average compute speedup over existing models.</div>
     <div class="links"><a href="https://arxiv.org/abs/2609.36385">Paper</a></div>
+  </div>
+  <div class="paper">
+    <div class="venue">IEEE MLSP 2026</div>
+    <div class="ttl">CPIP: A Representation Learning Framework for RF Signals</div>
+    <div class="auth">Pulkit Paliwal, Sai Shankar Narasimhan, Timothy Hu, Christian Speck</div>
+    <div class="ctx">Contrastive PDW&ndash;I/Q Pre-Training: a dual-encoder framework that learns a shared latent space for radar I/Q signals and their pulse descriptor word (PDW) parameters, trained on parameter-wise masked PDW views. The embeddings form interpretable clusters, improve PDW parameter regression after fine-tuning, and enable J-FTSD evaluation of conditional generative models.</div>
   </div>
 </div>
 <p style="font-size:13.5px;color:var(--muted)">* Equal contribution.</p>
