@@ -100,6 +100,7 @@
   .keyobs .lbl { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--purple); margin-bottom: 4px; }
 
   .papers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0 6px; }
+  .papers.two { grid-template-columns: repeat(2, 1fr); }
   .paper { border: 1px solid var(--line); border-radius: 12px; padding: 16px; background: #fff; display: flex; flex-direction: column; }
   .paper .venue { font-size: 13px; font-weight: 900; color: var(--blue); }
   .paper .venue em { font-style: normal; color: var(--red); }
@@ -141,7 +142,7 @@
     body { font-size: 16.5px; }
     h1 { font-size: 31px; }
     h2 { font-size: 24px; }
-    .problems, .papers, .stats { grid-template-columns: 1fr; }
+    .problems, .papers, .papers.two, .stats { grid-template-columns: 1fr; }
     .fig-row, .duo { grid-template-columns: 1fr; }
     .d-only { display: none; }
     .m-only { display: block; }
@@ -195,7 +196,7 @@
     <div class="num">Problem 3</div>
     <h4>Extremely diverse context</h4>
     <svg viewBox="0 0 260 112" role="img" aria-label="Context comes as categories, numbers, time series, rules and text" xmlns="http://www.w3.org/2000/svg" font-family="Lato, Helvetica, Arial, sans-serif"><rect x="6" y="6" width="112" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="62.0" y="23.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">pacemaker: yes</text><rect x="126" y="6" width="74" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="163.0" y="23.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">age: 60</text><rect x="206" y="6" width="48" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><path d="M212.0,19.0 L213.2,17.1 L214.4,15.5 L215.6,14.1 L216.8,13.3 L218.0,13.0 L219.2,13.3 L220.4,14.1 L221.6,15.5 L222.8,17.1 L224.0,19.0 L225.2,20.9 L226.4,22.5 L227.6,23.9 L228.8,24.7 L230.0,25.0 L231.2,24.7 L232.4,23.9 L233.6,22.5 L234.8,20.9 L236.0,19.0 L237.2,17.1 L238.4,15.5 L239.6,14.1 L240.8,13.3 L242.0,13.0 L243.2,13.3 L244.4,14.1 L245.6,15.5 L246.8,17.1 L248.0,19.0" stroke="#7b3fe4" stroke-width="1.8" fill="none"/><rect x="6" y="42" width="104" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="58.0" y="59.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">high ≥ close</text><rect x="118" y="42" width="136" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="186.0" y="59.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">month: July</text><rect x="6" y="78" width="248" height="28" rx="8" fill="#fff" stroke="#7b3fe4" stroke-opacity=".55"/><rect x="14" y="84" width="14" height="16" rx="2" fill="none" stroke="#7b3fe4" stroke-width="1.5"/><line x1="17" y1="89" x2="25" y2="89" stroke="#7b3fe4" stroke-width="1.5"/><line x1="17" y1="94" x2="25" y2="94" stroke="#7b3fe4" stroke-width="1.5"/><text x="36" y="97" font-size="12.5" fill="#1f2430">News: “Flying car demo announced”</text></svg>
-    <p>The context that influences a time series comes in many forms: categories, numbers, other time series, hard rules, and free text.</p>
+    <p>The context that influences a time series comes in many modalities: categories, numbers, other time series, hard rules, and free text.</p>
   </div>
 </div>
 
@@ -482,6 +483,25 @@
 </div>
 
 <p>Each type of context needs its own mechanism, but the principle is the same in all three papers: model the time series together with the information that determines how it evolves. The same principle also applies to evaluation, as J-FTSD shows, and to data collection, as the synthetic annotations in CoCo show.</p>
+
+<h2 id="more">More from our group</h2>
+<p>Additionally, check out our work on causal discovery (ALICE) and on extending Time Weaver's essence to the RF domain (ALF).</p>
+<div class="papers two">
+  <div class="paper">
+    <div class="venue">Submitted to ICLR 2027</div>
+    <div class="ttl">ALICE: Amortized Invariance-Aware Causal Discovery</div>
+    <div class="ctx">Causal discovery: inferring which variables cause which from observed data.</div>
+    <div class="links"><span style="color:var(--muted)">Preprint coming soon</span></div>
+  </div>
+  <div class="paper">
+    <div class="venue">Submitted to ICLR 2027</div>
+    <div class="ttl">ALF: Spectrally Anchored Latent Flow Matching for Wireless Signal Generation</div>
+    <div class="auth">Yiyang Li*, Sai Shankar Narasimhan*, Priam Alataris, Avi Bagchi, Kaushik Chowdhury, Sanjay Shakkottai</div>
+    <div class="ctx">Label-conditioned generation of wireless (RF) signals with a latent flow model that uses the spectrogram as an intermediate space. ALF reaches 84.5% train-on-synthetic, test-on-real accuracy, with a 100&times; average compute speedup over existing models.</div>
+    <div class="links"><a href="https://arxiv.org/abs/2609.36385">Paper</a></div>
+  </div>
+</div>
+<p style="font-size:13.5px;color:var(--muted)">* Equal contribution.</p>
 
 <footer>
   Questions or comments? Email <a href="mailto:nsaishankar@utexas.edu">nsaishankar@utexas.edu</a>.<br>
