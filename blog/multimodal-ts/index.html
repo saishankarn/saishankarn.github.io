@@ -67,6 +67,8 @@
 
   .problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 22px 0 10px; }
   .pcard { border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; background: #fff; }
+  ul.steps { padding-left: 22px; margin: 0 0 16px; }
+  ul.steps li { margin: 6px 0; }
   h4.sub { font-size: 19px; line-height: 1.3; margin: 34px 0 8px; font-weight: 900; }
   .pcard .num { font-size: 12px; font-weight: 900; color: var(--red); letter-spacing: 1px; text-transform: uppercase; }
   .pcard h4 { margin: 2px 0 8px; font-size: 17px; line-height: 1.3; }
@@ -267,10 +269,28 @@
     </ul>
   </div>
 
+  <h4 class="sub">Background: diffusion models</h4>
+  <p>Time Weaver is built on a diffusion model. A diffusion model learns the distribution of the training data so that it can generate new samples from that distribution. It has two processes:</p>
+  <ul class="steps">
+    <li><b>Forward process (noising).</b> Take a real time series x<sub>0</sub> and add a small amount of Gaussian noise at each of T steps. After enough steps, x<sub>T</sub> is pure Gaussian noise. This process is fixed and has nothing to learn.</li>
+    <li><b>Reverse process (denoising).</b> A neural network, the denoiser, learns to undo one step: given a noisy series x<sub>t</sub> and the step t, it predicts the noise that was added. It is trained on many real series at every noise level.</li>
+  </ul>
+  <p>This training objective is a simplified form of maximizing the likelihood of the training data, which is how the denoiser learns the data distribution. To generate a new series, we start from pure noise and apply the denoiser T times, removing a little noise at each step.</p>
+
+  <figure class="wide">
+    <div class="scrollx"><img src="img/diffusion.gif" width="1400" height="368" alt="Animation: the forward (noising) and reverse (denoising) processes of a diffusion model" loading="lazy"></div>
+    <figcaption>The forward process adds noise step by step (top arrows). The denoiser learns to reverse one step (bottom arrows); applied repeatedly, it turns pure noise into a time series. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  </figure>
+
   <div class="box insight">
     <span class="lbl">Our approach</span>
-    <p>Time Weaver is a diffusion model with a metadata encoder. Categorical and continuous metadata are tokenized separately, combined with self-attention, and used to condition the denoiser. At test time, it generates samples for metadata conditions that were not seen during training.</p>
+    <p>Time Weaver adds the metadata to the reverse process. Categorical and continuous metadata go through separate tokenizers, are concatenated, and are combined with self-attention into one embedding, z. The denoiser receives z at every step, so each denoising step is guided by the metadata. At test time, Time Weaver generates samples for metadata conditions that were not seen during training.</p>
   </div>
+
+  <figure class="wide">
+    <div class="scrollx"><img src="img/tw_arch.gif" width="1500" height="438" alt="Animation: Time Weaver encodes metadata into an embedding that conditions the denoiser" loading="lazy"></div>
+    <figcaption>Time Weaver architecture. The metadata embedding z is passed to the denoiser at every step. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  </figure>
 
   <figure>
     <img src="img/tw_motivation.jpg" width="1643" height="856" alt="Time Weaver generates an air quality series from precipitation, location, and month" loading="lazy">
