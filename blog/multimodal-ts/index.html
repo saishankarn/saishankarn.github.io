@@ -316,7 +316,7 @@
   <h4 class="sub">Our Metric: Joint Fréchet Time Series Distance (J-FTSD)</h4>
   <p>J-FTSD works like FID, but it compares real and synthesized data in a joint space of time series <i>and</i> metadata. It is computed in two steps.</p>
 
-  <p><b>Step 1: Learn a joint embedding space for time series and metadata.</b> We train two encoders together, φ<sub>time</sub> for time series and φ<sub>meta</sub> for metadata, on aligned patches of the same time window. Within a batch, each time series patch should be most similar to its own metadata patch (the diagonal of the similarity matrix) and less similar to all other metadata patches. This is the same training objective that CLIP uses for images and text.</p>
+  <p><b>Step 1: Learn a joint embedding space for time series and metadata.</b> We train two encoders together, a time series encoder and a metadata encoder, on aligned patches of the same time window. Within a batch, each time series patch should be most similar to its own metadata patch (the diagonal of the similarity matrix) and less similar to all other metadata patches. This is the same training objective that CLIP uses for images and text.</p>
 
   <figure class="card" style="max-width:680px;margin-left:auto;margin-right:auto">
     <img src="img/ts_clip.gif" width="1100" height="831" alt="Animation: training the time series and metadata encoders with a contrastive objective" loading="lazy">
@@ -494,7 +494,7 @@
   <div class="paper">
     <div class="venue">Submitted to ICLR 2027</div>
     <div class="ttl">ALICE: Amortized Learning for Invariance-aware Causal Estimation</div>
-    <div class="auth">Sai Shankar Narasimhan, Hemanth Ram, Raghav Mallampalli, Sandeep Chinchali</div>
+    <div class="auth">Sai Shankar Narasimhan*, Hemanth Ram*, Raghav Mallampalli, Sandeep Chinchali</div>
     <div class="ctx">A causal discovery foundation model, trained entirely on synthetic structural causal models, that maps observational data to a full directed causal graph in a single forward pass. Enforcing graph invariances enables test-time optimization that improves F1 by up to 14%, and using feature semantics improves real-world causal estimation by up to 18%.</div>
     <div class="links"><span style="color:var(--muted)">Preprint coming soon</span></div>
   </div>
