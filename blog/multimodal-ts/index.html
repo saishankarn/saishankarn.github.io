@@ -69,6 +69,7 @@
   .pcard { border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 12px; background: #fff; }
   ul.steps { padding-left: 22px; margin: 0 0 16px; }
   ul.steps li { margin: 6px 0; }
+  p.q { font-size: 21px; line-height: 1.35; font-weight: 900; margin: 40px 0 14px; color: var(--ink); }
   h4.sub { font-size: 19px; line-height: 1.3; margin: 34px 0 8px; font-weight: 900; }
   .pcard .num { font-size: 12px; font-weight: 900; color: var(--red); letter-spacing: 1px; text-transform: uppercase; }
   .pcard h4 { margin: 2px 0 8px; font-size: 17px; line-height: 1.3; }
@@ -166,7 +167,7 @@
   </div>
   <div class="tldr">
     <b>TL;DR</b>
-    <p>Most generative AI research targets text, images, audio, and video, but the bulk of enterprise data is stored as tables and time series. We argue that a time series should always be modeled together with its context: metadata, hard constraints, and text such as news. This post summarizes three of our papers built on this idea: <a href="#time-weaver">Time Weaver</a> and <a href="#cps">Constrained Posterior Sampling</a> for generation, and <a href="#coco">Context as Covariates</a> for forecasting.</p>
+    <p>Most generative AI research targets text, images, audio, and video, while the bulk of enterprise data is stored as tables and time series. However, such structured data do not make sense in isolation. We argue that a time series or a table should always be modeled together with its context: metadata, hard constraints, and text, such as news in finance or medical reports in healthcare. This post summarizes three of our papers built on this idea: <a href="#time-weaver">Time Weaver</a> and <a href="#cps">Constrained Posterior Sampling</a> for generation, and <a href="#coco">Context as Covariates</a> for forecasting.</p>
   </div>
 </header>
 
@@ -188,13 +189,13 @@
     <div class="num">Problem 2</div>
     <h4>Lack of positive transfer</h4>
     <svg viewBox="0 0 260 112" role="img" aria-label="Training on ECG data does not transfer to oil prices" xmlns="http://www.w3.org/2000/svg" font-family="Lato, Helvetica, Arial, sans-serif"><rect x="6" y="14" width="100" height="70" rx="8" fill="#fff" stroke="#e3e6ef"/><path d="M12.0,58.0 L15.5,58.0 L16.7,53.9 L17.9,58.0 L20.8,58.0 L22.6,61.4 L23.7,24.0 L24.9,66.5 L26.1,58.0 L30.2,58.0 L32.5,51.2 L35.5,58.0 L41.3,58.0 L41.3,58.0 L44.9,58.0 L46.0,53.9 L47.2,58.0 L50.1,58.0 L51.9,61.4 L53.1,24.0 L54.2,66.5 L55.4,58.0 L59.5,58.0 L61.9,51.2 L64.8,58.0 L70.7,58.0 L70.7,58.0 L74.2,58.0 L75.4,53.9 L76.5,58.0 L79.5,58.0 L81.2,61.4 L82.4,24.0 L83.6,66.5 L84.7,58.0 L88.9,58.0 L91.2,51.2 L94.1,58.0 L100.0,58.0" stroke="#d23f3f" stroke-width="1.8" fill="none"/><text x="56" y="102" text-anchor="middle" font-size="12.5" fill="#1f2430">ECG</text><rect x="154" y="14" width="100" height="70" rx="8" fill="#fff" stroke="#e3e6ef"/><path d="M160.0,50.0 L162.2,49.4 L164.4,50.1 L166.6,55.2 L168.8,54.8 L171.0,54.9 L173.2,56.0 L175.4,52.2 L177.6,52.3 L179.8,53.9 L182.0,57.4 L184.2,52.5 L186.4,50.2 L188.6,45.3 L190.8,49.0 L193.0,51.3 L195.2,45.8 L197.4,51.6 L199.6,57.2 L201.8,59.0 L204.0,60.4 L206.2,56.3 L208.4,50.5 L210.6,50.8 L212.8,45.5 L215.0,41.8 L217.2,38.7 L219.4,33.1 L221.6,32.6 L223.8,31.9 L226.0,36.0 L228.2,36.3 L230.4,37.9 L232.6,37.9 L234.8,39.9 L237.0,39.4 L239.2,36.7 L241.4,42.7 L243.6,48.6 L245.8,52.7 L248.0,55.2" stroke="#e07a1f" stroke-width="1.8" fill="none"/><text x="204" y="102" text-anchor="middle" font-size="12.5" fill="#1f2430">Oil price</text><line x1="112" y1="49" x2="142.0" y2="49.0" stroke="#5d6577" stroke-width="2"/><polygon points="148,49 139.9,52.9 139.9,45.1" fill="#5d6577"/><circle cx="130" cy="49" r="11" fill="#fff" stroke="#d23f3f" stroke-width="2"/><path d="M125,44 l10,10 M135,44 l-10,10" stroke="#d23f3f" stroke-width="2.4"/></svg>
-    <p>Pretraining on more text usually helps on new text tasks. In time series, training on one domain, such as ECG, gives little benefit on another, such as oil prices.</p>
+    <p>Pretraining on diverse text helps on new tasks. In time series, training on one domain, such as ECG, gives little benefit on another, such as oil prices.</p>
   </div>
   <div class="pcard">
     <div class="num">Problem 3</div>
     <h4>Extremely diverse context</h4>
     <svg viewBox="0 0 260 112" role="img" aria-label="Context comes as categories, numbers, time series, rules and text" xmlns="http://www.w3.org/2000/svg" font-family="Lato, Helvetica, Arial, sans-serif"><rect x="6" y="6" width="112" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="62.0" y="23.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">pacemaker: yes</text><rect x="126" y="6" width="74" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="163.0" y="23.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">age: 60</text><rect x="206" y="6" width="48" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><path d="M212.0,19.0 L213.2,17.1 L214.4,15.5 L215.6,14.1 L216.8,13.3 L218.0,13.0 L219.2,13.3 L220.4,14.1 L221.6,15.5 L222.8,17.1 L224.0,19.0 L225.2,20.9 L226.4,22.5 L227.6,23.9 L228.8,24.7 L230.0,25.0 L231.2,24.7 L232.4,23.9 L233.6,22.5 L234.8,20.9 L236.0,19.0 L237.2,17.1 L238.4,15.5 L239.6,14.1 L240.8,13.3 L242.0,13.0 L243.2,13.3 L244.4,14.1 L245.6,15.5 L246.8,17.1 L248.0,19.0" stroke="#7b3fe4" stroke-width="1.8" fill="none"/><rect x="6" y="42" width="104" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="58.0" y="59.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">high ≥ close</text><rect x="118" y="42" width="136" height="26" rx="13" fill="#7b3fe4" fill-opacity=".10" stroke="#7b3fe4" stroke-opacity=".55"/><text x="186.0" y="59.5" text-anchor="middle" font-size="13" fill="#7b3fe4" font-weight="700">month: July</text><rect x="6" y="78" width="248" height="28" rx="8" fill="#fff" stroke="#7b3fe4" stroke-opacity=".55"/><rect x="14" y="84" width="14" height="16" rx="2" fill="none" stroke="#7b3fe4" stroke-width="1.5"/><line x1="17" y1="89" x2="25" y2="89" stroke="#7b3fe4" stroke-width="1.5"/><line x1="17" y1="94" x2="25" y2="94" stroke="#7b3fe4" stroke-width="1.5"/><text x="36" y="97" font-size="12.5" fill="#1f2430">News: “Flying car demo announced”</text></svg>
-    <p>What drives a series comes in many forms: categories, numbers, other time series, hard rules, and free text.</p>
+    <p>The context that influences a time series comes in many forms: categories, numbers, other time series, hard rules, and free text.</p>
   </div>
 </div>
 
@@ -207,7 +208,7 @@
   <li class="prompt"><span class="t">Synthesize</span> <span class="s">PPG signals</span> for patients <span class="c">running on treadmills</span> with <span class="c">different weights and skin types</span>.</li>
 </ul>
 <div class="legend"><span><span class="t">task</span></span><span><span class="s">time series</span></span><span><span class="c">context</span></span></div>
-<p style="margin-top:16px">In each case, the context, not the past values alone, determines how the time series evolves.</p>
+<p style="margin-top:16px">In each case, the context, not the statistics or the past values of a time series alone, determines how the time series evolves.</p>
 
 <div class="keyobs">
   <span class="lbl">Key observation</span>
@@ -219,7 +220,7 @@
 <figcaption>The context tells the model which ECG to produce, not just what ECGs look like in general.</figcaption>
 </figure>
 
-<p>We build on this observation in two streams of research: <b>context-aware generation</b> and <b>context-aware forecasting</b>. Each paper below handles a different type of context.</p>
+<p>We build on this observation in two streams of research: <b>context-aware generation</b> and <b>context-aware forecasting</b>. To this end, we published three research works in these two streams.</p>
 
 <h2 id="papers">Three papers, published at ICML and NeurIPS</h2>
 <div class="papers">
@@ -228,14 +229,14 @@
     <div class="ttl">Time Weaver: A Conditional Time Series Generation Model</div>
     <div class="auth">Sai Shankar Narasimhan, Shubhankar Agarwal, Oguzhan Akcin, Sujay Sanghavi, Sandeep Chinchali</div>
     <div class="ctx"><b>Context:</b> metadata (categorical, continuous, and time-varying)</div>
-    <div class="links"><a href="#time-weaver">Summary</a><a href="https://arxiv.org/abs/2403.02682">Paper</a><a href="https://medium.com/@synthefy/diffusion-models-for-synthetic-time-series-data-8fc25dea70e6">Blog</a></div>
+    <div class="links"><a href="#time-weaver">Summary</a><a href="https://arxiv.org/abs/2403.02682">Paper</a><a href="https://medium.com/@synthefy/diffusion-models-for-synthetic-time-series-data-8fc25dea70e6">Blog</a><a href="https://github.com/UTAustin-SwarmLab/TimeWeaver-CPS">Code</a></div>
   </div>
   <div class="paper">
     <div class="venue">NeurIPS 2025</div>
     <div class="ttl">Constrained Posterior Sampling: Time Series Generation with Hard Constraints</div>
     <div class="auth">Sai Shankar Narasimhan, Shubhankar Agarwal, Litu Rout, Sanjay Shakkottai, Sandeep Chinchali</div>
     <div class="ctx"><b>Context:</b> hard constraints (rules every sample must satisfy)</div>
-    <div class="links"><a href="#cps">Summary</a><a href="https://arxiv.org/abs/2410.12652">Paper</a><a href="https://utaustin-swarmlab.github.io/2025/10/10/CPS.html">Blog</a></div>
+    <div class="links"><a href="#cps">Summary</a><a href="https://arxiv.org/abs/2410.12652">Paper</a><a href="https://utaustin-swarmlab.github.io/2025/10/10/CPS.html">Blog</a><a href="https://github.com/UTAustin-SwarmLab/TimeWeaver-CPS">Code</a></div>
   </div>
   <div class="paper">
     <div class="venue">NeurIPS 2026</div>
@@ -254,7 +255,7 @@
   <p>Synthetic time series are used to anonymize private data, stress-test systems, ask what-if questions, and augment imbalanced datasets. For these uses, a sample has to match a specific scenario, not just look like the training data on average.</p>
 
   <div class="phead" id="time-weaver"><h3>Time Weaver</h3><span class="badge spot">ICML 2024 &middot; Spotlight</span></div>
-  <div class="plinks"><a href="https://arxiv.org/abs/2403.02682">Paper</a><a href="https://medium.com/@synthefy/diffusion-models-for-synthetic-time-series-data-8fc25dea70e6">Blog</a></div>
+  <div class="plinks"><a href="https://arxiv.org/abs/2403.02682">Paper</a><a href="https://medium.com/@synthefy/diffusion-models-for-synthetic-time-series-data-8fc25dea70e6">Blog</a><a href="https://github.com/UTAustin-SwarmLab/TimeWeaver-CPS">Code</a></div>
 
   <ul class="prompts">
     <li class="prompt"><span class="t">Generate</span> an <span class="s">electricity demand pattern</span> for a household in <span class="c">Austin</span>, given the <span class="c">weather forecast for July</span>.</li>
@@ -263,16 +264,21 @@
   <div class="box problem">
     <span class="lbl">The problem</span>
     <ul>
-      <li>Existing generators, such as GANs, ignore the paired metadata, so they cannot generate samples for a specific condition.</li>
+      <li>Existing generators ignore the paired metadata, so they cannot generate samples for a specific condition.</li>
       <li>Metadata mixes categorical (location), continuous (latitude), and time-varying (weather forecast) variables. Image and audio generators, in contrast, are usually conditioned on static text prompts.</li>
-      <li>Time series are hard to judge visually, and image metrics such as the Fréchet Inception Distance (FID) ignore the metadata entirely.</li>
+      <li>Time series are hard to judge visually, and standard image metrics ignore the metadata entirely.</li>
     </ul>
   </div>
 
-  <h4 class="sub">Background: diffusion models</h4>
-  <p>Time Weaver is built on a diffusion model. A diffusion model learns the distribution of the training data so that it can generate new samples from that distribution. It has two processes:</p>
+  <figure>
+    <img src="img/tw_motivation.jpg" width="1643" height="856" alt="Time Weaver generates an air quality series from precipitation, location, and month" loading="lazy">
+    <figcaption>Given the expected precipitation, the location, and the month, Time Weaver generates an air quality series (red) that closely matches the real one (blue).</figcaption>
+  </figure>
+
+  <h4 class="sub">Background: Diffusion Models</h4>
+  <p>Time Weaver follows the diffusion modeling paradigm. A diffusion model learns the distribution of the training data so that it can generate new samples from that distribution. It has two processes:</p>
   <ul class="steps">
-    <li><b>Forward process (noising).</b> Take a real time series x<sub>0</sub> and add a small amount of Gaussian noise at each of T steps. After enough steps, x<sub>T</sub> is pure Gaussian noise. This process is fixed and has nothing to learn.</li>
+    <li><b>Forward process (noising).</b> Take a real time series x<sub>0</sub> and add a small amount of Gaussian noise at each of T steps. After enough steps, x<sub>T</sub> is pure Gaussian noise (a standard normal, &#x1D4A9;(0, <b>I</b>)). This process is fixed and has nothing to learn.</li>
     <li><b>Reverse process (denoising).</b> A neural network, the denoiser, learns to undo one step: given a noisy series x<sub>t</sub> and the step t, it predicts the noise that was added. It is trained on many real series at every noise level.</li>
   </ul>
   <p>This training objective is a simplified form of maximizing the likelihood of the training data, which is how the denoiser learns the data distribution. To generate a new series, we start from pure noise and apply the denoiser T times, removing a little noise at each step.</p>
@@ -282,24 +288,19 @@
     <figcaption>The forward process adds noise step by step (top arrows). The denoiser learns to reverse one step (bottom arrows); applied repeatedly, it turns pure noise into a time series. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
   </figure>
 
-  <div class="box insight">
-    <span class="lbl">Our approach</span>
-    <p>Time Weaver adds the metadata to the reverse process. Categorical and continuous metadata go through separate tokenizers, are concatenated, and are combined with self-attention into one embedding, z. The denoiser receives z at every step, so each denoising step is guided by the metadata. At test time, Time Weaver generates samples for metadata conditions that were not seen during training.</p>
-  </div>
+  <h4 class="sub">Our Approach</h4>
+  <p>Time Weaver adds the metadata to the reverse process. Categorical and continuous metadata go through separate tokenizers, are concatenated, and are combined with self-attention into one embedding, z. The denoiser receives z at every step, so each denoising step is guided by the metadata. At test time, Time Weaver generates samples for metadata conditions that were not seen during training.</p>
 
   <figure class="wide">
     <div class="scrollx"><img src="img/tw_arch.gif" width="1500" height="438" alt="Animation: Time Weaver encodes metadata into an embedding that conditions the denoiser" loading="lazy"></div>
     <figcaption>Time Weaver architecture. The metadata embedding z is passed to the denoiser at every step. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
   </figure>
 
-  <figure>
-    <img src="img/tw_motivation.jpg" width="1643" height="856" alt="Time Weaver generates an air quality series from precipitation, location, and month" loading="lazy">
-    <figcaption>Given the expected precipitation, the location, and the month, Time Weaver generates an air quality series (red) that closely matches the real one (blue).</figcaption>
-  </figure>
+  <p class="q">But how do we evaluate the usefulness of the generated time series?</p>
 
   <div class="box obs">
     <span class="lbl">Observation: image metrics do not transfer</span>
-    <p>FID only compares the distributions of real and generated samples. A generator that swaps the conditions, producing ventricular fibrillation when asked for a normal ECG and vice versa, gets the same score as a correct one. FID does not check whether a sample matches its metadata.</p>
+    <p>The Fréchet Inception Distance (FID), the standard metric for image generation, only compares the distributions of real and generated samples. A generator that swaps the conditions, producing ventricular fibrillation when asked for a normal ECG and vice versa, gets the same score as a correct one. FID does not check whether a sample matches its metadata. Moreover, context can be very complex, with discrete, continuous, and even textual conditions, in which case image metrics do not scale.</p>
   </div>
 
   <figure class="card">
@@ -307,10 +308,10 @@
     <figcaption>Generator B swaps the conditions but receives the same FID as Generator A.</figcaption>
   </figure>
 
-  <h4 class="sub">Our metric: Joint Fréchet Time Series Distance (J-FTSD)</h4>
+  <h4 class="sub">Our Metric: Joint Fréchet Time Series Distance (J-FTSD)</h4>
   <p>J-FTSD works like FID, but it compares real and synthesized data in a joint space of time series <i>and</i> metadata. It is computed in two steps.</p>
 
-  <p><b>Step 1: Learn a joint embedding of time series and metadata.</b> We train two encoders together, φ<sub>time</sub> for time series and φ<sub>meta</sub> for metadata, on aligned patches of the same time window. Within a batch, each time series patch should be most similar to its own metadata patch (the diagonal of the similarity matrix) and less similar to all other metadata patches. This is the same training objective that CLIP uses for images and text.</p>
+  <p><b>Step 1: Learn a joint embedding space for time series and metadata.</b> We train two encoders together, φ<sub>time</sub> for time series and φ<sub>meta</sub> for metadata, on aligned patches of the same time window. Within a batch, each time series patch should be most similar to its own metadata patch (the diagonal of the similarity matrix) and less similar to all other metadata patches. This is the same training objective that CLIP uses for images and text.</p>
 
   <figure class="card" style="max-width:680px;margin-left:auto;margin-right:auto">
     <img src="img/ts_clip.gif" width="1100" height="831" alt="Animation: training the time series and metadata encoders with a contrastive objective" loading="lazy">
@@ -328,7 +329,7 @@
 
   <figure class="wide">
     <img src="img/tw_metrics.jpg" width="2000" height="522" alt="Sensitivity of distance metrics to four perturbations on the Air Quality dataset" loading="lazy">
-    <figcaption>Sensitivity of distance metrics on the Air Quality dataset as we add Gaussian noise, warp, impute, or randomly change the metadata (left to right). J-FTSD (red) is the most sensitive in every case, and it is the only metric that responds when the metadata is changed.</figcaption>
+    <figcaption>Sensitivity of distance metrics on the Air Quality dataset as we add Gaussian noise, warp, impute, or randomly change the metadata (left to right). J-FTSD (red) is the most sensitive in every case, and it is the only metric that responds when the metadata is changed (label flipping).</figcaption>
   </figure>
 
   <h4 class="sub">Results</h4>
@@ -337,9 +338,11 @@
     <figcaption>Real (blue) and generated (red) data for unseen test metadata on four datasets. <b>Rows 1–2:</b> samples from Time Weaver and from the best-performing GAN. <b>Rows 3–4:</b> histograms of the real and generated values over each dataset. The GAN fails to match the real distribution, especially on Air Quality and Traffic.</figcaption>
   </figure>
 
+  <p>To measure how useful the generated data is, we use Train on Synthetic, Test on Real (TSTR). For ECG, for example, we train a classifier to predict a patient's heart condition from the ECG using only ECGs generated by Time Weaver, and then test it on real ECGs from the held-out test set. If the synthetic ECGs carry the features of their heart conditions, the classifier performs well on real data. We also report J-FTSD.</p>
+
   <figure style="max-width:460px;margin-left:auto;margin-right:auto">
     <img src="img/tw_results.jpg" width="1200" height="728" alt="Improvement of Time Weaver over GANs on J-FTSD and TSTR" loading="lazy">
-    <figcaption>Improvement over state-of-the-art GANs on J-FTSD and on TSTR (train on synthetic data, test on real data).</figcaption>
+    <figcaption>Improvement over state-of-the-art GANs on J-FTSD and TSTR.</figcaption>
   </figure>
 
   <div class="stats">
@@ -349,7 +352,7 @@
   </div>
 
   <div class="phead" id="cps"><h3>Constrained Posterior Sampling (CPS)</h3><span class="badge">NeurIPS 2025</span></div>
-  <div class="plinks"><a href="https://arxiv.org/abs/2410.12652">Paper</a><a href="https://utaustin-swarmlab.github.io/2025/10/10/CPS.html">Blog</a></div>
+  <div class="plinks"><a href="https://arxiv.org/abs/2410.12652">Paper</a><a href="https://utaustin-swarmlab.github.io/2025/10/10/CPS.html">Blog</a><a href="https://github.com/UTAustin-SwarmLab/TimeWeaver-CPS">Code</a></div>
   <p>Some context is a hard rule rather than a soft condition. Stock prices, physical systems, and operational limits come with constraints that every sample must satisfy.</p>
 
   <ul class="prompts">
@@ -380,9 +383,10 @@
     <figcaption>CPS generates daily stock prices that satisfy the price bounds and the mean constraint, conditioned on correlated stocks, the stock name, and the month.</figcaption>
   </figure>
 
+  <h4 class="sub">Results</h4>
   <figure class="wide">
-    <img src="img/cps_more_constraints.gif" width="1500" height="614" alt="Animation: constraints are added one at a time, and CPS samples track the real series more closely" loading="lazy">
-    <figcaption>Constraints are added one at a time, from left to right. As more constraints are added, CPS (bottom row, red) tracks the real series (blue) more closely, while the baselines, Guided DiffTime and COP, degrade.</figcaption>
+    <img src="img/cps_more_constraints.gif" width="1500" height="614" alt="Animation: as more constraints are imposed, CPS samples track the real series more closely" loading="lazy">
+    <figcaption>As more constraints are imposed, CPS (bottom row, red) tracks the real series (blue) more closely, while the baselines, Guided DiffTime and COP, degrade.</figcaption>
   </figure>
 
   <div class="stats">
@@ -408,7 +412,7 @@
 
   <figure class="wide">
     <img src="img/coco_crude_oil.jpg" width="2000" height="464" alt="CoCo follows a context-driven drop in crude oil prices that Chronos2 misses" loading="lazy">
-    <figcaption>News about recession fears precedes a drop in crude oil prices. CoCo follows the drop. Chronos2, which only sees the numbers, does not.</figcaption>
+    <figcaption>News about recession fears precedes a drop in crude oil prices. CoCo follows the drop. Chronos2, a state-of-the-art forecasting model that only sees the numbers, does not.</figcaption>
   </figure>
 
   <div class="box problem">
@@ -440,6 +444,8 @@
     <figcaption>CoCo pipeline. The LLM (Qwen3-4B) is fine-tuned with reinforcement learning (GRPO) and is rewarded when its forecast covariate reduces the TSFM's error. The TSFM (Chronos2) is then fine-tuned on the covariates from the fine-tuned LLM.</figcaption>
   </figure>
 
+  <p class="q">But where is the large-scale paired text and time series data to train on?</p>
+
   <div class="box obs">
     <span class="lbl">Observation: synthetic text transfers to real text</span>
     <p>To address the data shortage, we used an LLM to annotate about 37,000 real time series (about 12 million time steps) with plausible events and outlooks. Synthetic and real annotations describe the same kinds of patterns, such as an upcoming rise or a slow decline, so models trained on synthetic text also work on real news.</p>
@@ -450,6 +456,7 @@
     <figcaption>LLM-generated annotations for US gasoline prices in 2022. The text foreshadows the trend (green: rising, red: falling).</figcaption>
   </figure>
 
+  <h4 class="sub">Results</h4>
   <figure class="wide">
     <img src="img/coco_rank_mae.jpg" width="2000" height="735" alt="Average rank and mean MAE of CoCo and 26 baselines across 30 datasets" loading="lazy">
     <figcaption>Average rank (top) and mean absolute error, MAE (bottom), across 30 datasets and 95 settings, compared with 26 approaches grouped by type (one baseline is omitted for scale). Lower is better for both. CoCo has the best average rank and the lowest mean MAE.</figcaption>
@@ -477,7 +484,7 @@
 <p>Each type of context needs its own mechanism, but the principle is the same in all three papers: model the time series together with the information that determines how it evolves. The same principle also applies to evaluation, as J-FTSD shows, and to data collection, as the synthetic annotations in CoCo show.</p>
 
 <footer>
-  Questions or comments? Email <a href="mailto:narasimhansaishankar@gmail.com">narasimhansaishankar@gmail.com</a>.<br>
+  Questions or comments? Email <a href="mailto:nsaishankar@utexas.edu">nsaishankar@utexas.edu</a>.<br>
   This work was done at the <a href="https://utaustin-swarmlab.github.io/">SWARM Lab</a>, The University of Texas at Austin, advised by <a href="https://www.ece.utexas.edu/people/faculty/sandeep-chinchali">Prof. Sandeep Chinchali</a>.<br>
   <a href="../../index.html">&larr; Back to homepage</a>
 </footer>
