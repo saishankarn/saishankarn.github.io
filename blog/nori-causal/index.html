@@ -252,8 +252,8 @@
 <p>The UCI Credit Default table covers 30,000 card holders: their credit limit, demographics, and six months of repayment status, bills and payments. The target is whether they defaulted the next month, coded as 1 for default and 0 otherwise.</p>
 
 <figure>
-  <img src="img/credit_graph.png" alt="Graph with default in the centre: solid arrows from repayment status now (1.00), two months ago (0.88), three months ago (0.83), one month ago (0.79) and four months ago (0.74); dashed arrows below 0.5 from sex, five months ago, age, payments and marriage">
-  <figcaption><b>The ten strongest relations to default.</b> Repayment history drives default: the latest status at 1.00, and the four months before it between 0.74 and 0.88. Demographics stay below 0.5.</figcaption>
+  <img src="img/credit_graph.png" alt="Graph with default in the centre: solid arrows from repayment status now (1.00), two months ago (0.88), three months ago (0.83), one month ago (0.79) and four months ago (0.74); dashed arrows below 0.5 from sex, five months ago, age, the amount paid two months ago, and marriage">
+  <figcaption><b>The ten strongest relations to default.</b> <i>now</i>, <i>−1m</i> … <i>−5m</i>: repayment status this month and one to five months earlier; <i>paid</i>: the amount paid two months earlier. Repayment history drives default: the latest status at 1.00, and the months before it between 0.74 and 0.88. Demographics stay below 0.5.</figcaption>
 </figure>
 
 <p>In the glass-box post, the latest repayment status carried most of Nori's predictive signal. Nori-Causal now adds the direction: repayment history is a cause of default, not a consequence of it, which is what a lender needs to know before acting on it. Sex, age and marriage stay below 0.5 in both directions, so Nori-Causal does not treat them as drivers.</p>
@@ -263,7 +263,7 @@
 
 <figure>
   <img src="img/diabetes_graph.png" alt="Graph with progression in the centre: solid arrows from triglycerides (0.78) and BMI (0.60); dashed arrows below 0.5 for the other eight measurements">
-  <figcaption><b>Causes and effects of disease progression.</b> Triglycerides (0.78) and BMI (0.60) are the likely drivers; every other measurement is below 0.5 in both directions.</figcaption>
+  <figcaption><b>Causes and effects of disease progression.</b> <i>BP</i>: blood pressure; <i>TC</i>: total cholesterol. Triglycerides (0.78) and BMI (0.60) are the likely drivers; every other measurement is below 0.5 in both directions.</figcaption>
 </figure>
 
 <p>Triglycerides and BMI are also the two strongest known predictors in this dataset, and both are plausible drivers of diabetes progression. Nori-Causal names them as causes and does not commit to anything else. The dashed arrows carry a lesson too. Age, sex and blood pressure lean slightly toward being effects of progression, which cannot be right: they were measured a year before the outcome. Nori-Causal sees only the numbers, not what the columns mean or when they were recorded, which is why weak relations are drawn dashed and why the scores are evidence to check, not conclusions.</p>
