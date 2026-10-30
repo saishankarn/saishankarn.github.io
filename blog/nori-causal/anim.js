@@ -2,7 +2,7 @@
 (() => {
   const NS = 'http://www.w3.org/2000/svg';
   const C = {
-    cause: '#3557c4', effect: '#e0841f', neither: '#a59b8f', ink: '#282620',
+    cause: '#c4501d', effect: '#3e5c94', neither: '#a59b8f', ink: '#282620',
     muted: '#6d6258', line: '#e5ddd2', soft: '#f3eee6', gray: '#cbc2b5', red: '#c2452f', green: '#2f8a4c'
   };
   const REDUCE = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -101,7 +101,7 @@
     el('text', { x: T.x, y: T.y + 5, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 900, fill: '#fff', text: 'Default' }, tg);
     el('text', { x: T.x, y: 220, 'text-anchor': 'middle', 'font-size': 12.5, fill: C.muted, text: 'risk of default' }, svg);
     el('rect', { x: 316, y: 230, width: 128, height: 10, rx: 5, fill: C.soft }, svg);
-    const risk = el('rect', { x: 316, y: 230, width: 128, height: 10, rx: 5, fill: C.red, class: 'grow', style: { transform: 'scaleX(.72)' } }, svg);
+    const risk = el('rect', { x: 316, y: 230, width: 128, height: 10, rx: 5, fill: C.ink, class: 'grow', style: { transform: 'scaleX(.72)' } }, svg);
     const verdict = el('text', { x: T.x, y: 266, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': 700, fill: C.muted, class: 'fade', style: { opacity: 0 } }, svg);
 
     nodes.forEach(n => {
@@ -142,7 +142,7 @@
       show(pulse, false);
       ring.style.opacity = 1; ring.style.transform = 'scale(1.25)';
       risk.style.transform = 'scaleX(.30)';
-      setText(verdict, 'risk drops'); verdict.setAttribute('fill', C.cause); show(verdict);
+      setText(verdict, 'risk drops'); verdict.setAttribute('fill', C.ink); show(verdict);
       await wait(500);
       snap(ring, { opacity: 0, transform: 'scale(1)' });
       await wait(2000);
@@ -336,7 +336,7 @@
     const LX = 484, LY = 284, LW = 256, LH = 34;
     el('text', { x: LX, y: LY - 8, 'font-size': 11.5, fill: C.muted, text: 'training loss' }, svg);
     el('line', { x1: LX, y1: LY + LH, x2: LX + LW, y2: LY + LH, stroke: C.line }, svg);
-    const lossPath = el('path', { d: '', fill: 'none', stroke: C.red, 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
+    const lossPath = el('path', { d: '', fill: 'none', stroke: C.muted, 'stroke-width': 2, 'stroke-linejoin': 'round' }, svg);
 
     // ---- random DAG with the target in the middle of the order ----
     function sampleGraph() {
@@ -352,8 +352,7 @@
         }
         const ch = n => edges.filter(e => e[0] === n).map(e => e[1]);
         const pa = n => edges.filter(e => e[1] === n).map(e => e[0]);
-        const reach = (s, f) => { const seen = new Set(), st = [s]; while (st.length) { for (const m of f(st.pop())) if (!seen.has(m)) { seen.add(m); st.push(m); } } return seen; };
-        const anc = reach(0, pa), des = reach(0, ch);
+        const anc = new Set(pa(0)), des = new Set(ch(0));
         if (anc.size && des.size && anc.size + des.size < 5) {
           const label = [0, 1, 2, 3, 4, 5].map(i => (anc.has(i) ? 'cause' : des.has(i) ? 'effect' : 'neither'));
           return { edges, label };
@@ -384,7 +383,7 @@
         if (i === 0) return;
         const k = gr.label[i];
         n.c.setAttribute('stroke', reveal ? C[k] : C.gray);
-        n.c.setAttribute('fill', reveal && k !== 'neither' ? (k === 'cause' ? '#e8edfb' : '#fdf0e2') : '#fff');
+        n.c.setAttribute('fill', reveal && k !== 'neither' ? (k === 'cause' ? '#fbe9e0' : '#e6ebf5') : '#fff');
       });
     }
 
@@ -459,58 +458,11 @@
     };
   }
 
-  // =====================================================================
-  // Case-study charts: P(cause) to the left, P(effect) to the right
-  // =====================================================================
-  function caseChart(svg, data) {
-    const feats = data.features;
-    const RH = 30, TOP = 74, CX = 380, NAMEW = 230, MAXB = 215;
-    const H = TOP + feats.length * RH + 24;
-    svg.setAttribute('viewBox', `0 0 760 ${H}`);
-    el('text', { x: CX, y: 28, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 900, fill: C.ink, text: data.target }, svg);
-    el('text', { x: CX - NAMEW / 2 - 6, y: 54, 'text-anchor': 'end', 'font-size': 12.5, 'font-weight': 900, fill: C.cause, text: '← P(cause)' }, svg);
-    el('text', { x: CX + NAMEW / 2 + 6, y: 54, 'font-size': 12.5, 'font-weight': 900, fill: C.effect, text: 'P(effect) →' }, svg);
-    const bars = [];
-    feats.forEach((f, i) => {
-      const y = TOP + i * RH;
-      const kind = f.cause > 0.5 ? 'cause' : f.effect > 0.5 ? 'effect' : 'neither';
-      if (i % 2 === 0) el('rect', { x: 20, y: y - RH / 2 + 2, width: 720, height: RH - 4, rx: 6, fill: '#fbf8f3' }, svg);
-      el('text', { x: CX, y: y + 5, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': kind === 'neither' ? 400 : 700, fill: kind === 'neither' ? C.muted : C[kind], text: f.name }, svg);
-      const lx = CX - NAMEW / 2 - 6, rx = CX + NAMEW / 2 + 6;
-      el('line', { x1: lx, y1: y - 9, x2: lx, y2: y + 9, stroke: C.line }, svg);
-      el('line', { x1: rx, y1: y - 9, x2: rx, y2: y + 9, stroke: C.line }, svg);
-      const cw = Math.max(1, MAXB * f.cause), ew = Math.max(1, MAXB * f.effect);
-      const cb = el('rect', { x: lx - cw, y: y - 8, width: cw, height: 16, rx: 3, fill: C.cause, opacity: kind === 'cause' ? 1 : 0.45, class: 'growr', style: { transform: 'scaleX(0)' } }, svg);
-      const eb = el('rect', { x: rx, y: y - 8, width: ew, height: 16, rx: 3, fill: C.effect, opacity: kind === 'effect' ? 1 : 0.45, class: 'grow', style: { transform: 'scaleX(0)' } }, svg);
-      const ct = el('text', { x: lx - cw - 6, y: y + 4.5, 'text-anchor': 'end', 'font-size': 12, fill: C.muted, text: f.cause.toFixed(2), class: 'fade', style: { opacity: 0 } }, svg);
-      const et = el('text', { x: rx + ew + 6, y: y + 4.5, 'font-size': 12, fill: C.muted, text: f.effect.toFixed(2), class: 'fade', style: { opacity: 0 } }, svg);
-      bars.push({ cb, eb, ct, et });
-    });
-    if (data.placeholder) {
-      el('text', { x: CX, y: H / 2 + 20, 'text-anchor': 'middle', 'font-size': 64, 'font-weight': 900, fill: '#e0a800', opacity: 0.18, transform: `rotate(-12 ${CX} ${H / 2})`, text: 'PLACEHOLDER' }, svg);
-    }
-    const io = new IntersectionObserver(async es => {
-      if (!es[0].isIntersecting) return;
-      io.disconnect();
-      for (const b of bars) {
-        b.cb.style.transform = 'scaleX(1)'; b.eb.style.transform = 'scaleX(1)';
-        setTimeout(() => { show(b.ct); show(b.et); }, 700);
-        await new Promise(r => setTimeout(r, REDUCE ? 0 : 90));
-      }
-    }, { threshold: 0.25 });
-    io.observe(svg);
-  }
-
   // ---------- boot ----------
   const boot = () => {
     const a = document.getElementById('anim-problem'); if (a) runner(a, animProblem(a));
     const b = document.getElementById('anim-infer'); if (b) runner(b, animInfer(b));
     const c = document.getElementById('anim-train'); if (c) runner(c, animTrain(c));
-    const cases = window.NORI_CAUSAL_CASES || {};
-    for (const [id, data] of Object.entries(cases)) {
-      const s = document.getElementById(id);
-      if (s) caseChart(s, data);
-    }
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

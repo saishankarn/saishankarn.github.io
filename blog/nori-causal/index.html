@@ -73,10 +73,13 @@
   .m-inline { display: none; }
   sup { line-height: 0; font-size: 0.72em; }
 
-  .todo { background: #fff8e6; border: 1px dashed #e0a800; color: #7a5a00; border-radius: 10px; padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
 
-  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; }
-  footer a { color: var(--ink); text-decoration: none; font-weight: 500; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86em; background: #f3eee6; color: var(--ink); padding: 1px 5px; border-radius: 5px; }
+  pre { background: #f7f3ec; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; overflow-x: auto; margin: 18px 0 22px; }
+  pre code { background: none; padding: 0; font-size: 14px; line-height: 1.6; }
+  .card img { width: 100%; height: auto; display: block; border-radius: 6px; }
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--text); }
+  footer a.home { color: var(--ink); text-decoration: none; font-weight: 500; }
 
   /* animation styling */
   svg text { font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.01em; }
@@ -123,7 +126,7 @@
 
 <aside class="lead">
   <span class="lbl">In short</span>
-  <p>A predictive model tells you which features matter, but not why. A feature can matter because it drives the target or because it is driven by it, and only the first kind is something you can act on. Nori-Causal reads a table and, in a single forward pass, returns the probability that each feature is a cause or an effect of the target. It learns this from the same synthetic tables that Nori is pretrained on, where the true causes and effects are known.</p>
+  <p>A predictive model tells you which features matter, but not why. A feature can matter because it drives the target or because it is driven by it, and only the first kind is something you can act on. Nori-Causal reads a table and, in a single forward pass, returns the probability that each feature is a direct cause or a direct effect of the target. It learns this from the same synthetic tables that Nori is pretrained on, where the true causes and effects are known.</p>
 </aside>
 
 <p>In our <a href="https://www.synthefy.com/blog/nori-interpretability">glass-box post</a>, we showed how <a href="https://www.synthefy.com/blog/synthefy-tabular-release">Nori</a> can be distilled into simple, interpretable relationships between the target and the features: one readable curve per feature that you can check and defend. Now, we push this intuition forward with <strong>Nori-Causal</strong>, which shows what the causes and the effects of the target are.</p>
@@ -147,9 +150,9 @@
 <h2 id="issues">Fundamental Issues</h2>
 <p>Telling causes from effects using only a table is hard, for three reasons.</p>
 <ul class="bul">
-  <li><strong>Correlation has no direction.</strong> Accuracy and feature importance are symmetric. A feature that causes the target and a feature caused by the target can look identical to a predictive model.</li>
+  <li><strong>Correlation has no direction.</strong> Accuracy, feature importance, and Shapley values all measure association, and association is symmetric. A feature that causes the target and a feature caused by the target can look identical to a predictive model.</li>
   <li><strong>Real data has no answer key.</strong> Real tables never come with their true causal graph. The experiments that would reveal it are often slow, expensive, or unethical, so there is little to learn from or check against.</li>
-  <li><strong>There are too many possible graphs.</strong> Classical causal discovery searches over graphs, one dataset at a time. With 5 features there are already 29,281 possible graphs, and with 10 there are about 4 &times; 10<sup>18</sup>. Most methods also rely on strong assumptions about the data.</li>
+  <li><strong>There are too many possible graphs.</strong> Classical causal discovery searches over graphs or fits a new model for every dataset. With 5 features there are already 29,281 possible graphs, and with 10 there are about 4 &times; 10<sup>18</sup>. Most methods also rely on strong assumptions about the data.</li>
 </ul>
 
 <!-- ===================== OUR SOLUTION ===================== -->
@@ -157,8 +160,8 @@
 <p>Nori-Causal addresses these issues with the same recipe that makes Nori work: learn from synthetic data where the answer is known, then apply what was learned to real tables without any retraining.</p>
 
 <h3 id="how-it-works">How does Nori-Causal work?</h3>
-<p>Nori-Causal takes a table and a target column. In a single forward pass, it returns two probabilities for every feature: the probability that the feature is a cause of the target, and the probability that it is an effect of the target. A feature for which both are low is neither.</p>
-<p>Like Nori, it is never trained on your data. There is no graph search and no tuning. The table is the only input.</p>
+<p>Nori-Causal takes a table, with the target as one of its columns. In a single forward pass, it returns two probabilities for every feature: the probability that the feature is a direct cause of the target, and the probability that it is a direct effect. A feature for which both are low is neither. It also scores every pair of features, giving a map of the table's likely causal structure.</p>
+<p>Like Nori, it is never trained on your data. There is no per-dataset search or fitting: the table goes through the model once, and the answer comes back in seconds.</p>
 
 <figure>
   <div class="card scrollx">
@@ -169,8 +172,8 @@
 </figure>
 
 <h3 id="training">How do we train it?</h3>
-<p>Nori is pretrained entirely on synthetic tables, many of which are generated from a random causal graph: a few columns are sampled first, and every other column is computed from its parents through random functions and noise. For Nori, the graph is only a means to an end. It produces realistic tables, and once a table is made, the graph is thrown away.</p>
-<p>For Nori-Causal, we keep the graph. Because we generated the data ourselves, we know exactly which columns caused the target and which were caused by it. This gives us what real data never has, an answer key, and we train Nori-Causal to recover it from the table alone.</p>
+<p>We use the same synthetic data engine that trains Nori. Every synthetic table is generated from a causal graph that we chose: a few columns are sampled first, and every other column is computed from its parents through random functions and noise. For Nori, the graph is only a means to an end. It produces realistic tables, and once a table is made, the graph is thrown away.</p>
+<p>For Nori-Causal, we keep the graph. Because we chose it, we know exactly which columns cause which. This gives us what real data never has, an answer key, and we train Nori-Causal to recover it from the table alone.</p>
 
 <figure>
   <div class="card scrollx">
@@ -180,41 +183,45 @@
   <figcaption>Training Nori-Causal. Every table comes from a new random graph. Nori-Causal only sees the table, and its predictions are compared with the true causes and effects. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
 </figure>
 
-<p>Every training table comes from a different graph, with different functions, noise levels, and sizes. To do well across all of them, Nori-Causal cannot memorize any single dataset. It has to learn the general patterns in the data that reveal which way the arrows point. That is what lets it read a real table it has never seen.</p>
+<p>Nori-Causal sees millions of these tables, each with its own graph, mechanisms, noise, and size. To do well across all of them, it cannot memorize any single dataset. It has to learn the general patterns in the data that reveal which way the arrows point. That is what lets it read a real table it has never seen: it never sees the real datasets it is evaluated on.</p>
 
 <!-- ===================== CASE STUDIES ===================== -->
 <h2 id="case-studies">Case Studies</h2>
-<p>We now run Nori-Causal on two real datasets. Neither was seen during training, and in both cases the table is the only input.</p>
+<p>We now run Nori-Causal on two real tables. In the graphs below, the target sits in the center. Each arrow shows a feature's more probable direction, labeled with its probability. Solid arrows are at or above 0.5; dashed ones are weaker, so their direction is unreliable.</p>
 
 <h3 id="credit">Credit Defaults</h3>
-<p>We return to the credit-card default dataset from the glass-box post: 30,000 credit-card holders in Taiwan, with their credit limit, demographics, and six months of repayment status, bill amounts, and payments. The target is whether a customer defaults the following month.</p>
-
-<!-- CASE-CREDIT-RESULTS -->
-<div class="todo"><b>Placeholder.</b> The figure below uses made-up values to show the layout. It will be replaced with Nori-Causal's actual outputs on this dataset.</div>
+<p>The UCI Credit Default table covers 30,000 card holders: their credit limit, demographics, and six months of repayment status, bills, and payments. The target is whether they defaulted the next month, coded as 1 for default and 0 otherwise.</p>
 <figure>
-  <div class="card scrollx">
-    <svg id="case-credit" viewBox="0 0 760 420" role="img" aria-label="Probability that each feature is a cause or an effect of credit-card default"></svg>
-  </div>
-  <figcaption>Nori-Causal's output on the credit-default table. Bars to the left give the probability that a feature is a cause of default; bars to the right give the probability that it is an effect. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  <div class="card"><img src="img/credit_graph.png" width="1096" height="954" alt="Graph with default in the center: solid arrows from repayment status now (1.00), two months ago (0.88), three months ago (0.83), one month ago (0.79) and four months ago (0.74); dashed arrows below 0.5 from sex, five months ago, age, payments and marriage" loading="lazy"></div>
+  <figcaption>The ten strongest relations to default. Repayment history drives default: the latest status at 1.00, and the four months before it between 0.74 and 0.88. Demographics stay below 0.5.</figcaption>
 </figure>
-<p><i>[Interpretation of the credit-default results goes here.]</i></p>
-<!-- /CASE-CREDIT-RESULTS -->
+<p>In the glass-box post, the latest repayment status carried most of Nori's predictive signal. Nori-Causal now adds the direction: repayment history is a cause of default, not a consequence of it, which is what a lender needs to know before acting on it. Sex, age, and marriage stay below 0.5 in both directions, so Nori-Causal does not treat them as drivers.</p>
 
 <h3 id="healthcare">Healthcare</h3>
-<!-- CASE-HEALTH-RESULTS -->
-<div class="todo"><b>Placeholder.</b> Dataset description, figure, and interpretation for the healthcare case study go here.</div>
+<p>The diabetes table follows 442 patients. Ten measurements are taken at baseline: age, sex, BMI, blood pressure, and six blood tests. The target is how far the disease has progressed one year later.</p>
 <figure>
-  <div class="card scrollx">
-    <svg id="case-health" viewBox="0 0 760 360" role="img" aria-label="Probability that each feature is a cause or an effect of the diagnosis"></svg>
-  </div>
-  <figcaption>Nori-Causal's output on the healthcare table. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  <div class="card"><img src="img/diabetes_graph.png" width="1130" height="954" alt="Graph with progression in the center: solid arrows from triglycerides (0.78) and BMI (0.60); dashed arrows below 0.5 for the other eight measurements" loading="lazy"></div>
+  <figcaption>Causes and effects of disease progression. Triglycerides (0.78) and BMI (0.60) are the likely drivers; every other measurement is below 0.5 in both directions.</figcaption>
 </figure>
-<p><i>[Interpretation of the healthcare results goes here.]</i></p>
-<!-- /CASE-HEALTH-RESULTS -->
+<p>Triglycerides and BMI are also the two strongest known predictors in this dataset, and both are plausible drivers of diabetes progression. Nori-Causal names them as causes and does not commit to anything else.</p>
+<p>The dashed arrows carry a lesson too. Age, sex, and blood pressure lean slightly toward being effects of progression, which cannot be right: they were measured a year before the outcome. Nori-Causal sees only the numbers, not what the columns mean or when they were recorded. This is why weak relations are drawn dashed, and why the scores are evidence to check, not conclusions.</p>
 
-<!-- ===================== SUMMARY ===================== -->
-<h2 id="summary">Summary</h2>
-<p>Feature importance tells you what a prediction depends on. Glass-box models show you how. Nori-Causal adds the direction: which features drive the target, and which are driven by it. It learns this from synthetic tables whose causes and effects are known, and it needs nothing but your table at inference time.</p>
+<!-- ===================== TRY IT ===================== -->
+<h2 id="try">Try Nori-Causal</h2>
+<p>Nori-Causal runs inside <code>NoriInterpreter</code>, next to the glass-box workflow:</p>
+<pre><code>from synthefy_nori.interpretability import NoriInterpreter
+
+interp = NoriInterpreter(causal=True).fit(X, y)
+interp.causal_ranking_       # per feature: p_cause, p_effect, importance
+interp.plot_causal_graph()   # the target-centred graph shown above</code></pre>
+<p>For a yes/no target such as default, pass it as 0/1 with <code>task="regression"</code>. The weights download from the Hugging Face Hub on first use.</p>
+
+<h2 id="next">What It Can't Do Yet</h2>
+<ul class="bul">
+  <li><strong>It gives probabilities, not a final graph.</strong> Turning scores into a decided set of causes is the next step.</li>
+  <li><strong>It reads numbers, not meaning.</strong> Column names such as "age" or "sex" already rule out some directions. Bringing that knowledge in with a language model is next on our list.</li>
+  <li><strong>It works with continuous and 0/1 targets.</strong> Targets with several unordered classes are not supported yet.</li>
+</ul>
 
 <h2 id="more">More on Nori</h2>
 <ul class="bul">
@@ -224,42 +231,13 @@
   <li><a href="https://www.synthefy.com/blog/nori-embeddings">Introducing Nori Embeddings: Representations That Know What You Care About</a></li>
 </ul>
 
-<footer><a href="../../index.html">&larr; Back to Home</a></footer>
+<footer>
+  Questions or comments? Email <a href="mailto:sai@synthefy.com">sai@synthefy.com</a>.<br>
+  Nori-Causal is part of <a href="https://www.synthefy.com/">Synthefy</a>'s Nori family of tabular foundation models.<br>
+  <a class="home" href="../../index.html">&larr; Back to Home</a>
+</footer>
 
 </main>
-<script>
-/* Case-study outputs: P(cause) and P(effect) of each feature with respect to the target.
-   Set placeholder: false once the real values are in. */
-window.NORI_CAUSAL_CASES = {
-  'case-credit': {
-    placeholder: true,
-    target: 'Default next month',
-    features: [
-      { name: 'Repayment status, last month', cause: 0.90, effect: 0.04 },
-      { name: 'Repayment status, 2 months ago', cause: 0.78, effect: 0.06 },
-      { name: 'Credit limit', cause: 0.62, effect: 0.20 },
-      { name: 'Latest bill amount', cause: 0.30, effect: 0.25 },
-      { name: 'Latest payment amount', cause: 0.20, effect: 0.58 },
-      { name: 'Age', cause: 0.35, effect: 0.02 },
-      { name: 'Education', cause: 0.22, effect: 0.03 },
-      { name: 'Marital status', cause: 0.12, effect: 0.03 },
-      { name: 'Sex', cause: 0.08, effect: 0.02 }
-    ]
-  },
-  'case-health': {
-    placeholder: true,
-    target: 'Diagnosis',
-    features: [
-      { name: 'Feature A', cause: 0.85, effect: 0.05 },
-      { name: 'Feature B', cause: 0.70, effect: 0.10 },
-      { name: 'Feature C', cause: 0.15, effect: 0.80 },
-      { name: 'Feature D', cause: 0.10, effect: 0.65 },
-      { name: 'Feature E', cause: 0.20, effect: 0.15 },
-      { name: 'Feature F', cause: 0.05, effect: 0.08 }
-    ]
-  }
-};
-</script>
 <script src="anim.js"></script>
 </body>
 </html>
