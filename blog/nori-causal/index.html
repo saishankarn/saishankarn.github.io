@@ -81,24 +81,11 @@
   footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--text); }
   footer a.home { color: var(--ink); text-decoration: none; font-weight: 500; }
 
-  /* animation styling */
-  svg text { font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.01em; }
-  .fade { transition: opacity .6s ease; }
-  .move { transition: transform 1.1s cubic-bezier(.45,.05,.35,1), opacity .5s ease; }
-  .grow { transition: transform .9s cubic-bezier(.3,.7,.2,1); transform-box: fill-box; transform-origin: left center; }
-  .growr { transition: transform .9s cubic-bezier(.3,.7,.2,1); transform-box: fill-box; transform-origin: right center; }
-  .pop { transition: transform .45s cubic-bezier(.3,1.6,.5,1), opacity .35s ease; transform-box: fill-box; transform-origin: center; }
-  .stroke { transition: stroke .6s ease, fill .6s ease, opacity .6s ease; }
-  @media (prefers-reduced-motion: reduce) {
-    .fade, .move, .grow, .growr, .pop, .stroke { transition: none !important; }
-  }
-
   @media (max-width: 760px) {
     body { font-size: 16px; }
     h1 { font-size: 34px; }
     h2 { font-size: 24px; }
     .dek { font-size: 17px; }
-    .scrollx svg { min-width: 660px; }
     .m-inline { display: inline; }
   }
 </style>
@@ -134,14 +121,14 @@
 <!-- ===================== THE PROBLEM ===================== -->
 <h2 id="problem">The Problem</h2>
 <p>A glass-box model answers an important question: which features does the prediction depend on, and how? But a feature can be predictive for two very different reasons. It can drive the target, or it can be driven by it.</p>
-<p>Consider credit default. Missed payments are a strong signal of an upcoming default. So are collection calls. Any predictive model, glass box or not, will rate both as important. But only one of them is a lever. Fewer missed payments lower the risk of default. Stopping the collection calls does not, because the calls are a consequence of the risk, not its source.</p>
+<p>Consider credit default. Missed payments are a strong signal of an upcoming default. So are collection calls. Any predictive model, glass box or not, will rate both as important. But only one of them is a lever. Fewer missed payments lower the risk of default. Stopping the collection calls does not, because the calls are a consequence of the risk, not its source. Yet the data alone can look identical either way:</p>
 
 <figure>
-  <div class="card scrollx">
+  <div class="card">
     <div class="flabel">Animation</div>
-    <svg id="anim-problem" viewBox="0 0 760 282" role="img" aria-label="Animation: four features are equally predictive of default, but only the two causes change the risk of default when acted on"></svg>
+    <img src="img/two_stories.gif" width="840" height="360" alt="Animation: one scatter plot of a feature against the target, shown next to two causal stories, X causes Y and Y causes X, which alternate" loading="lazy">
   </div>
-  <figcaption>An illustrative example. All four features predict default, but acting on a cause changes the risk of default, while acting on an effect does not. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  <figcaption><strong>Same data, two stories.</strong> The scatter plot fits both &ldquo;X causes Y&rdquo; and &ldquo;Y causes X&rdquo; equally well, and an importance score rates X the same under both.</figcaption>
 </figure>
 
 <blockquote><p>Almost every decision built on top of a model is an intervention: approve a loan, change a treatment, adjust a price. Before acting, we need to know which features are causes of the target and which are effects of it.</p></blockquote>
@@ -164,11 +151,11 @@
 <p>Like Nori, it is never trained on your data. There is no per-dataset search or fitting: the table goes through the model once, and the answer comes back in seconds.</p>
 
 <figure>
-  <div class="card scrollx">
+  <div class="card">
     <div class="flabel">Animation</div>
-    <svg id="anim-infer" viewBox="0 0 760 272" role="img" aria-label="Animation: a table goes into Nori-Causal, which outputs the probability that each feature is a cause or an effect of the target"></svg>
+    <img src="img/how_it_works.gif" width="960" height="420" alt="Animation: a table enters Nori-Causal and a graph grows around the target, one labeled arrow at a time" loading="lazy">
   </div>
-  <figcaption>Nori-Causal reads the whole table at once and scores every feature. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  <figcaption><strong>One table in, causes and effects out.</strong> Each arrow shows a feature&rsquo;s more probable direction, labeled with its probability. Solid arrows are at or above 0.5; dashed ones are weaker, so their direction is unreliable.</figcaption>
 </figure>
 
 <h3 id="training">How do we train it?</h3>
@@ -176,18 +163,18 @@
 <p>For Nori-Causal, we keep the graph. Because we chose it, we know exactly which columns cause which. This gives us what real data never has, an answer key, and we train Nori-Causal to recover it from the table alone.</p>
 
 <figure>
-  <div class="card scrollx">
+  <div class="card">
     <div class="flabel">Animation</div>
-    <svg id="anim-train" viewBox="0 0 760 330" role="img" aria-label="Animation: a random causal graph generates a synthetic table; Nori-Causal predicts causes and effects from the table and is compared against the true graph"></svg>
+    <img src="img/training.gif" width="960" height="360" alt="Animation: a known causal graph generates a synthetic table, and Nori-Causal learns to recover the graph from the table" loading="lazy">
   </div>
-  <figcaption>Training Nori-Causal. Every table comes from a new random graph. Nori-Causal only sees the table, and its predictions are compared with the true causes and effects. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+  <figcaption><strong>Learning from tables whose answers we know.</strong> A known graph produces a table; the model learns to recover the graph from the table alone.</figcaption>
 </figure>
 
-<p>Nori-Causal sees millions of these tables, each with its own graph, mechanisms, noise, and size. To do well across all of them, it cannot memorize any single dataset. It has to learn the general patterns in the data that reveal which way the arrows point. That is what lets it read a real table it has never seen: it never sees the real datasets it is evaluated on.</p>
+<p>Nori-Causal sees millions of these tables, each with its own graph, mechanisms, noise, and size. To do well across all of them, it cannot memorize any single dataset. It has to learn the general patterns in the data that reveal which way the arrows point. That is what lets it read a real table it has never seen. None of the real datasets below were used in training.</p>
 
 <!-- ===================== CASE STUDIES ===================== -->
 <h2 id="case-studies">Case Studies</h2>
-<p>We now run Nori-Causal on two real tables. In the graphs below, the target sits in the center. Each arrow shows a feature's more probable direction, labeled with its probability. Solid arrows are at or above 0.5; dashed ones are weaker, so their direction is unreliable.</p>
+<p>We now run Nori-Causal on two real tables. The graphs read the same way as above: the target sits in the center, solid arrows are at or above 0.5, and dashed arrows are weaker.</p>
 
 <h3 id="credit">Credit Defaults</h3>
 <p>The UCI Credit Default table covers 30,000 card holders: their credit limit, demographics, and six months of repayment status, bills, and payments. The target is whether they defaulted the next month, coded as 1 for default and 0 otherwise.</p>
@@ -238,6 +225,5 @@ interp.plot_causal_graph()   # the target-centred graph shown above</code></pre>
 </footer>
 
 </main>
-<script src="anim.js"></script>
 </body>
 </html>
