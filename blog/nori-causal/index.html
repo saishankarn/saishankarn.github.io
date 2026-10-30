@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introducing Nori-Causal: From What Matters to What Causes</title>
+<meta name="description" content="Nori-Causal reads a table and returns, for every feature, the probability that it is a cause or an effect of the target. Case studies on credit defaults and healthcare.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introducing Nori-Causal: From What Matters to What Causes">
+<meta property="og:description" content="Glass-box models show which features matter. Nori-Causal shows which features drive the target, and which are driven by it.">
+<meta property="og:url" content="https://saishankarn.github.io/blog/nori-causal/">
+<meta property="og:image" content="https://saishankarn.github.io/blog/nori-causal/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fffefa;
+    --ink: #282620;
+    --text: #6d6258;
+    --accent: #b45830;
+    --accent-dark: #984525;
+    --line: #e5ddd2;
+    --cap: rgba(17, 24, 39, 0.5);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 17px;
+    line-height: 1.65;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: underline; text-decoration-color: rgba(180, 88, 48, 0.35); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--accent); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+
+  .back { display: inline-block; margin: 28px 0 34px; font-size: 15px; font-weight: 500; color: var(--ink); text-decoration: none; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px; color: #8a8076; }
+  .meta .cat { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .meta .dot { color: #c9bfb3; }
+  h1 { font-size: 46px; line-height: 1.1; font-weight: 400; letter-spacing: -0.035em; margin: 18px 0 20px; color: var(--ink); }
+  .dek { font-size: 19px; line-height: 1.65; color: var(--text); margin: 0 0 18px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: rgba(0, 0, 0, 0.4); margin-bottom: 30px; }
+  .heroimg { margin: 0 0 40px; padding-top: 30px; border-top: 1px solid var(--line); }
+  .heroimg img { width: 100%; height: auto; display: block; border-radius: 12px; }
+
+  .lead { border: 1px solid rgba(180, 83, 9, 0.2); border-radius: 12px; padding: 21px 22px 22px; margin: 0 0 34px; }
+  .lead .lbl { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; color: var(--accent-dark); margin-bottom: 10px; }
+  .lead p { color: var(--ink); margin: 0; }
+
+  p { color: var(--text); margin: 0 0 20px; }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  ul.bul { list-style: disc; padding-left: 24px; margin: 20px 0 24px; }
+  ul.bul li { margin: 10px 0; color: var(--text); }
+  ul.bul li::marker { color: #c9bfb3; }
+  h2 { font-size: 28px; line-height: 1.22; font-weight: 600; letter-spacing: -0.02em; margin: 56px 0 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); color: var(--ink); }
+  h3 { font-size: 21px; line-height: 1.3; font-weight: 600; letter-spacing: -0.017em; margin: 36px 0 14px; color: var(--ink); }
+  blockquote { margin: 28px 0; padding: 8px 0 8px 20px; border-left: 3px solid var(--accent); background: rgba(217, 119, 6, 0.04); border-radius: 0 8px 8px 0; font-style: italic; color: var(--text); }
+  blockquote p { margin: 0; }
+
+  figure { margin: 36px 0 40px; }
+  figure svg { width: 100%; height: auto; display: block; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 8px; }
+  .flabel { font-size: 10.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 2px 0 2px 4px; }
+  figcaption { font-size: 13px; line-height: 1.55; color: var(--cap); margin-top: 12px; }
+  .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .m-inline { display: none; }
+  sup { line-height: 0; font-size: 0.72em; }
+
+  .todo { background: #fff8e6; border: 1px dashed #e0a800; color: #7a5a00; border-radius: 10px; padding: 10px 14px; font-size: 14.5px; margin: 14px 0; }
+
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; }
+  footer a { color: var(--ink); text-decoration: none; font-weight: 500; }
+
+  /* animation styling */
+  svg text { font-family: 'Inter', system-ui, sans-serif; letter-spacing: -0.01em; }
+  .fade { transition: opacity .6s ease; }
+  .move { transition: transform 1.1s cubic-bezier(.45,.05,.35,1), opacity .5s ease; }
+  .grow { transition: transform .9s cubic-bezier(.3,.7,.2,1); transform-box: fill-box; transform-origin: left center; }
+  .growr { transition: transform .9s cubic-bezier(.3,.7,.2,1); transform-box: fill-box; transform-origin: right center; }
+  .pop { transition: transform .45s cubic-bezier(.3,1.6,.5,1), opacity .35s ease; transform-box: fill-box; transform-origin: center; }
+  .stroke { transition: stroke .6s ease, fill .6s ease, opacity .6s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .fade, .move, .grow, .growr, .pop, .stroke { transition: none !important; }
+  }
+
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    h1 { font-size: 34px; }
+    h2 { font-size: 24px; }
+    .dek { font-size: 17px; }
+    .scrollx svg { min-width: 660px; }
+    .m-inline { display: inline; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+
+<a class="back" href="../../index.html">&larr; Back to Home</a>
+
+<header>
+  <div class="meta">
+    <span class="cat">AI &amp; Machine Learning</span>
+    <span class="cat">Research</span>
+    <span class="dot">&bull;</span><span>October 29, 2026</span>
+    <span class="dot">&bull;</span><span>6 min read</span>
+  </div>
+  <h1>Introducing Nori-Causal: From What Matters to What Causes</h1>
+  <p class="dek">Glass-box models show which features Nori relies on. Nori-Causal goes one step further: it tells you which features drive the target, and which are driven by it.</p>
+  <div class="tags"><span>#Causal Discovery</span><span>#Tabular Data</span><span>#Foundation Models</span><span>#Explainability</span></div>
+</header>
+
+<figure class="heroimg">
+  <img src="img/hero.png" width="2000" height="526" alt="Nori-Causal untangles correlations into causes that flow into the target and effects that flow out of it">
+</figure>
+
+<aside class="lead">
+  <span class="lbl">In short</span>
+  <p>A predictive model tells you which features matter, but not why. A feature can matter because it drives the target or because it is driven by it, and only the first kind is something you can act on. Nori-Causal reads a table and, in a single forward pass, returns the probability that each feature is a cause or an effect of the target. It learns this from the same synthetic tables that Nori is pretrained on, where the true causes and effects are known.</p>
+</aside>
+
+<p>In our <a href="https://www.synthefy.com/blog/nori-interpretability">glass-box post</a>, we showed how <a href="https://www.synthefy.com/blog/synthefy-tabular-release">Nori</a> can be distilled into simple, interpretable relationships between the target and the features: one readable curve per feature that you can check and defend. Now, we push this intuition forward with <strong>Nori-Causal</strong>, which shows what the causes and the effects of the target are.</p>
+
+<!-- ===================== THE PROBLEM ===================== -->
+<h2 id="problem">The Problem</h2>
+<p>A glass-box model answers an important question: which features does the prediction depend on, and how? But a feature can be predictive for two very different reasons. It can drive the target, or it can be driven by it.</p>
+<p>Consider credit default. Missed payments are a strong signal of an upcoming default. So are collection calls. Any predictive model, glass box or not, will rate both as important. But only one of them is a lever. Fewer missed payments lower the risk of default. Stopping the collection calls does not, because the calls are a consequence of the risk, not its source.</p>
+
+<figure>
+  <div class="card scrollx">
+    <div class="flabel">Animation</div>
+    <svg id="anim-problem" viewBox="0 0 760 282" role="img" aria-label="Animation: four features are equally predictive of default, but only the two causes change the risk of default when acted on"></svg>
+  </div>
+  <figcaption>An illustrative example. All four features predict default, but acting on a cause changes the risk of default, while acting on an effect does not. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+</figure>
+
+<blockquote><p>Almost every decision built on top of a model is an intervention: approve a loan, change a treatment, adjust a price. Before acting, we need to know which features are causes of the target and which are effects of it.</p></blockquote>
+
+<!-- ===================== FUNDAMENTAL ISSUES ===================== -->
+<h2 id="issues">Fundamental Issues</h2>
+<p>Telling causes from effects using only a table is hard, for three reasons.</p>
+<ul class="bul">
+  <li><strong>Correlation has no direction.</strong> Accuracy and feature importance are symmetric. A feature that causes the target and a feature caused by the target can look identical to a predictive model.</li>
+  <li><strong>Real data has no answer key.</strong> Real tables never come with their true causal graph. The experiments that would reveal it are often slow, expensive, or unethical, so there is little to learn from or check against.</li>
+  <li><strong>There are too many possible graphs.</strong> Classical causal discovery searches over graphs, one dataset at a time. With 5 features there are already 29,281 possible graphs, and with 10 there are about 4 &times; 10<sup>18</sup>. Most methods also rely on strong assumptions about the data.</li>
+</ul>
+
+<!-- ===================== OUR SOLUTION ===================== -->
+<h2 id="solution">Our Solution: Nori-Causal</h2>
+<p>Nori-Causal addresses these issues with the same recipe that makes Nori work: learn from synthetic data where the answer is known, then apply what was learned to real tables without any retraining.</p>
+
+<h3 id="how-it-works">How does Nori-Causal work?</h3>
+<p>Nori-Causal takes a table and a target column. In a single forward pass, it returns two probabilities for every feature: the probability that the feature is a cause of the target, and the probability that it is an effect of the target. A feature for which both are low is neither.</p>
+<p>Like Nori, it is never trained on your data. There is no graph search and no tuning. The table is the only input.</p>
+
+<figure>
+  <div class="card scrollx">
+    <div class="flabel">Animation</div>
+    <svg id="anim-infer" viewBox="0 0 760 272" role="img" aria-label="Animation: a table goes into Nori-Causal, which outputs the probability that each feature is a cause or an effect of the target"></svg>
+  </div>
+  <figcaption>Nori-Causal reads the whole table at once and scores every feature. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+</figure>
+
+<h3 id="training">How do we train it?</h3>
+<p>Nori is pretrained entirely on synthetic tables, many of which are generated from a random causal graph: a few columns are sampled first, and every other column is computed from its parents through random functions and noise. For Nori, the graph is only a means to an end. It produces realistic tables, and once a table is made, the graph is thrown away.</p>
+<p>For Nori-Causal, we keep the graph. Because we generated the data ourselves, we know exactly which columns caused the target and which were caused by it. This gives us what real data never has, an answer key, and we train Nori-Causal to recover it from the table alone.</p>
+
+<figure>
+  <div class="card scrollx">
+    <div class="flabel">Animation</div>
+    <svg id="anim-train" viewBox="0 0 760 330" role="img" aria-label="Animation: a random causal graph generates a synthetic table; Nori-Causal predicts causes and effects from the table and is compared against the true graph"></svg>
+  </div>
+  <figcaption>Training Nori-Causal. Every table comes from a new random graph. Nori-Causal only sees the table, and its predictions are compared with the true causes and effects. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+</figure>
+
+<p>Every training table comes from a different graph, with different functions, noise levels, and sizes. To do well across all of them, Nori-Causal cannot memorize any single dataset. It has to learn the general patterns in the data that reveal which way the arrows point. That is what lets it read a real table it has never seen.</p>
+
+<!-- ===================== CASE STUDIES ===================== -->
+<h2 id="case-studies">Case Studies</h2>
+<p>We now run Nori-Causal on two real datasets. Neither was seen during training, and in both cases the table is the only input.</p>
+
+<h3 id="credit">Credit Defaults</h3>
+<p>We return to the credit-card default dataset from the glass-box post: 30,000 credit-card holders in Taiwan, with their credit limit, demographics, and six months of repayment status, bill amounts, and payments. The target is whether a customer defaults the following month.</p>
+
+<!-- CASE-CREDIT-RESULTS -->
+<div class="todo"><b>Placeholder.</b> The figure below uses made-up values to show the layout. It will be replaced with Nori-Causal's actual outputs on this dataset.</div>
+<figure>
+  <div class="card scrollx">
+    <svg id="case-credit" viewBox="0 0 760 420" role="img" aria-label="Probability that each feature is a cause or an effect of credit-card default"></svg>
+  </div>
+  <figcaption>Nori-Causal's output on the credit-default table. Bars to the left give the probability that a feature is a cause of default; bars to the right give the probability that it is an effect. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+</figure>
+<p><i>[Interpretation of the credit-default results goes here.]</i></p>
+<!-- /CASE-CREDIT-RESULTS -->
+
+<h3 id="healthcare">Healthcare</h3>
+<!-- CASE-HEALTH-RESULTS -->
+<div class="todo"><b>Placeholder.</b> Dataset description, figure, and interpretation for the healthcare case study go here.</div>
+<figure>
+  <div class="card scrollx">
+    <svg id="case-health" viewBox="0 0 760 360" role="img" aria-label="Probability that each feature is a cause or an effect of the diagnosis"></svg>
+  </div>
+  <figcaption>Nori-Causal's output on the healthcare table. <span class="m-inline">Scroll sideways to see the full figure.</span></figcaption>
+</figure>
+<p><i>[Interpretation of the healthcare results goes here.]</i></p>
+<!-- /CASE-HEALTH-RESULTS -->
+
+<!-- ===================== SUMMARY ===================== -->
+<h2 id="summary">Summary</h2>
+<p>Feature importance tells you what a prediction depends on. Glass-box models show you how. Nori-Causal adds the direction: which features drive the target, and which are driven by it. It learns this from synthetic tables whose causes and effects are known, and it needs nothing but your table at inference time.</p>
+
+<h2 id="more">More on Nori</h2>
+<ul class="bul">
+  <li><a href="https://www.synthefy.com/blog/synthefy-tabular-release">Synthefy-Nori: The Foundation Model That Replaces XGBoost</a></li>
+  <li><a href="https://www.synthefy.com/blog/nori-interpretability">From Black Box to Glass Box: Extracting Interpretability from Nori</a></li>
+  <li><a href="https://www.synthefy.com/blog/nori-flash-distillation">Introducing Nori Flash: Nori's Accuracy, Now in Microseconds on CPU</a></li>
+  <li><a href="https://www.synthefy.com/blog/nori-embeddings">Introducing Nori Embeddings: Representations That Know What You Care About</a></li>
+</ul>
+
+<footer><a href="../../index.html">&larr; Back to Home</a></footer>
+
+</main>
+<script>
+/* Case-study outputs: P(cause) and P(effect) of each feature with respect to the target.
+   Set placeholder: false once the real values are in. */
+window.NORI_CAUSAL_CASES = {
+  'case-credit': {
+    placeholder: true,
+    target: 'Default next month',
+    features: [
+      { name: 'Repayment status, last month', cause: 0.90, effect: 0.04 },
+      { name: 'Repayment status, 2 months ago', cause: 0.78, effect: 0.06 },
+      { name: 'Credit limit', cause: 0.62, effect: 0.20 },
+      { name: 'Latest bill amount', cause: 0.30, effect: 0.25 },
+      { name: 'Latest payment amount', cause: 0.20, effect: 0.58 },
+      { name: 'Age', cause: 0.35, effect: 0.02 },
+      { name: 'Education', cause: 0.22, effect: 0.03 },
+      { name: 'Marital status', cause: 0.12, effect: 0.03 },
+      { name: 'Sex', cause: 0.08, effect: 0.02 }
+    ]
+  },
+  'case-health': {
+    placeholder: true,
+    target: 'Diagnosis',
+    features: [
+      { name: 'Feature A', cause: 0.85, effect: 0.05 },
+      { name: 'Feature B', cause: 0.70, effect: 0.10 },
+      { name: 'Feature C', cause: 0.15, effect: 0.80 },
+      { name: 'Feature D', cause: 0.10, effect: 0.65 },
+      { name: 'Feature E', cause: 0.20, effect: 0.15 },
+      { name: 'Feature F', cause: 0.05, effect: 0.08 }
+    ]
+  }
+};
+</script>
+<script src="anim.js"></script>
+</body>
+</html>
