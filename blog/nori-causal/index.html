@@ -87,6 +87,14 @@
   .legend { font-size: 13.5px; color: var(--muted); margin: 6px 0 0; }
   .legend span { margin-right: 14px; }
 
+  .example { border: 1px solid rgba(180, 83, 9, 0.2); border-radius: 12px; padding: 21px 22px 22px; margin: 22px 0 24px;
+    background-image: linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(217, 119, 6, 0.043) 68%, rgba(255, 255, 255, 0.32) 100%);
+    box-shadow: rgba(146, 64, 14, 0.55) 0 18px 44px -32px; }
+  .example-label { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #984525; margin-bottom: 10px; }
+  .example p { margin: 0 0 10px; }
+  .example p:last-child { margin: 0; }
+  .example ul { margin: 0 0 10px; padding-left: 20px; }
+  .example li { margin: 6px 0; }
   .box { border-radius: 12px; padding: 14px 18px; margin: 18px 0; border: 1px solid; }
   .box .lbl { display: block; font-size: 12.5px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 4px; }
   .box ul { margin: 4px 0 0; padding-left: 20px; }
@@ -138,6 +146,9 @@
   .m-only, .m-inline { display: none; }
   .scrollx { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
+  ul.links { padding-left: 22px; margin: 0 0 16px; }
+  ul.links li { margin: 6px 0; }
+  .cta { margin: 22px 0 8px; padding: 20px 22px; border-radius: 12px; border: 1px solid rgba(180, 88, 48, 0.3); background: rgba(180, 88, 48, 0.09); }
   footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--muted); }
 
   @media (max-width: 760px) {
@@ -172,27 +183,36 @@
 </header>
 
 <figure class="wide">
-  <img src="img/hero.png" alt="A table on the left flowing into a causal graph on the right: the target in the centre, solid arrows from its causes, a gray arrow to an effect and dashed arrows for weak relations">
+  <img src="img/hero.gif" width="1600" height="425" alt="Animation: a table with feature columns x1 to x7 and a target column y flows into Nori-Causal, and a causal graph is built around y one arrow at a time: solid arrows from its causes, a gray arrow to an effect and dashed arrows for weak relations">
 </figure>
 
 <p>With <a href="https://www.synthefy.com/blog/nori-interpretability">glass-box models</a>, we showed how Nori can be distilled into simple, readable relationships between the target and its features: which features matter, and how each one moves the prediction. Here we push that intuition one step further. <b>Nori-Causal</b> asks a different question of the same table: for every feature, is it a <b>cause</b> of the target, or an <b>effect</b> of it?</p>
 
 <h2 id="problem">The problem</h2>
 <p>Feature importance tells you what a model <i>relies on</i>. It does not tell you which way the dependence runs. A feature can be important because it drives the target, or because the target drives it. For prediction, the difference does not matter. For decisions, it is everything: changing a cause changes the outcome, while changing an effect changes nothing.</p>
-<p>Consider a credit model. A late payment last month and a collections flag raised after a default are both excellent predictors of default. Only one of them is a lever. The data alone can look identical either way:</p>
+<aside class="example">
+  <span class="example-label">Example</span>
+  <p>Consider a credit model with two columns that both predict default very well:</p>
+  <ul>
+    <li><b>A late payment last month</b> is an <b>actual cause</b> of default. It is recorded before the outcome, and a customer who is already falling behind is more likely to default next month. Helping that customer catch up lowers the risk.</li>
+    <li><b>A collections flag</b> is only <b>correlated</b> with default. The bank raises it after a customer has defaulted, so it tracks the outcome without driving it. Clearing the flag, or stopping the calls, does not change whether anyone defaults.</li>
+  </ul>
+  <p>A feature-importance chart ranks the two side by side. Only the late payment is a lever a lender can pull.</p>
+</aside>
+<p>To a predictive model, the two look the same. Only the direction tells you which one to act on:</p>
 
 <figure class="card">
-  <img src="img/two_stories.gif" alt="Animation: one scatter plot of a feature against the target, shown next to two causal stories, X causes Y and Y causes X, which alternate">
-  <figcaption><b>Same data, two stories.</b> The scatter plot fits both "X causes Y" and "Y causes X" equally well, and an importance score rates X the same under both.</figcaption>
+  <img src="img/problem.gif" width="960" height="356" alt="Animation: missed payments, high credit utilization, collection calls and a credit score drop all predict default; arrows then show the first two as causes and the last two as effects; reducing missed payments lowers the risk of default, while stopping the collection calls leaves it unchanged">
+  <figcaption><b>Predictive is not causal.</b> All four features predict default, but acting on a cause changes the risk of default, while acting on an effect does not. An illustrative example.</figcaption>
 </figure>
 
 <h2 id="issues">Fundamental issues</h2>
 <div class="problems">
   <div class="pcard">
     <div class="num">Issue 1</div>
-    <h4>Correlation has no direction</h4>
-    <svg viewBox="0 0 260 90" role="img" aria-label="Two nodes connected by an arrow with a question mark" xmlns="http://www.w3.org/2000/svg" font-family="Lato, Helvetica, Arial, sans-serif"><circle cx="50" cy="45" r="20" fill="#ecebe6" stroke="#2b2b2b"/><text x="50" y="51" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2430">X</text><circle cx="210" cy="45" r="20" fill="#c4501d" stroke="#2b2b2b"/><text x="210" y="51" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">Y</text><line x1="76" y1="45" x2="184" y2="45" stroke="#9aa0ad" stroke-width="2.5" stroke-dasharray="6 5"/><text x="130" y="38" text-anchor="middle" font-size="22" font-weight="900" fill="#d23f3f">?</text></svg>
-    <p>Accuracy, importance and Shapley values all measure association, and association is symmetric.</p>
+    <h4>No real datasets to learn from</h4>
+    <svg viewBox="0 0 260 90" role="img" aria-label="A real table comes without its true causal graph" xmlns="http://www.w3.org/2000/svg" font-family="Lato, Helvetica, Arial, sans-serif"><g transform="translate(16,8)"><rect x="0" y="0" width="100" height="62" rx="6" fill="#fff" stroke="#c9cbd3"/><rect x="0" y="0" width="100" height="14" rx="6" fill="#eef0f5"/><g stroke="#e3e6ef"><path d="M25 0 V62 M50 0 V62 M75 0 V62"/><path d="M0 28 H100 M0 42 H100 M0 56 H100"/></g><rect x="75" y="14" width="25" height="48" fill="#c4501d" opacity=".18"/></g><text x="66" y="86" text-anchor="middle" font-size="12" fill="#5d6577">real table</text><g transform="translate(150,8)"><rect x="0" y="0" width="94" height="62" rx="8" fill="#fbfbfd" stroke="#c9cbd3" stroke-dasharray="4 4"/><text x="47" y="44" text-anchor="middle" font-size="32" font-weight="900" fill="#c5cad6">?</text></g><text x="197" y="86" text-anchor="middle" font-size="12" fill="#5d6577">true causal graph</text></svg>
+    <p>Real tables never come with their true causal graph. The experiments that would reveal it are slow, expensive, or unethical, so there is no real data to train or check a causal model on.</p>
   </div>
   <div class="pcard">
     <div class="num">Issue 2</div>
@@ -211,7 +231,7 @@
 <h2 id="solution">Our solution: Nori-Causal</h2>
 
 <h3 id="how">How does Nori-Causal work?</h3>
-<p>Nori-Causal takes a table, with the target as one of its columns, and returns, for every feature, the probability that it is a direct cause of the target and the probability that it is a direct effect. It also scores every pair of features, giving a full map of the table's likely causal structure. There is no per-dataset search or fitting: the table goes through the model once, and the answer comes back in seconds.</p>
+<p>Nori-Causal takes a table, with the target as one of its columns, and returns, for every feature, the probability that it is a direct cause of the target and the probability that it is a direct effect. It also scores every pair of features, giving a full map of the table's likely causal structure. There is no per-dataset search or fitting: the answer comes back in a single forward pass.</p>
 
 <figure class="card">
   <img src="img/how_it_works.gif" alt="Animation: a table enters Nori-Causal and a graph grows around the target, one labelled arrow at a time">
@@ -255,7 +275,16 @@
 interp = NoriInterpreter(causal=True).fit(X, y)
 interp.causal_ranking_       # per feature: p_cause, p_effect, importance
 interp.plot_causal_graph()   # the target-centred graph shown above</code></pre>
-<p>For a yes/no target such as default, pass it as 0/1 with <code>task="regression"</code>. The weights download from the Hugging Face Hub on first use.</p>
+<p>For a yes/no target such as default, pass it as 0/1 with <code>task="regression"</code>. The weights download from the <a href="https://huggingface.co/Synthefy/Nori-Causal">Hugging Face Hub</a> on first use.</p>
+<p>Grab the code, weights, and docs:</p>
+<ul class="links">
+  <li><b>GitHub:</b> <a href="https://github.com/Synthefy/synthefy-nori">github.com/Synthefy/synthefy-nori</a></li>
+  <li><b>Nori-Causal weights:</b> <a href="https://huggingface.co/Synthefy/Nori-Causal">Nori-Causal on Hugging Face</a></li>
+  <li><b>Latest Nori weights:</b> <a href="https://huggingface.co/Synthefy/Nori-1-5">Nori 1.5 on Hugging Face</a></li>
+  <li><b>Docs:</b> <a href="https://docs.synthefy.com/nori/">docs.synthefy.com/nori</a>, including the <a href="https://docs.synthefy.com/nori/glassbox">glass-box guide</a></li>
+</ul>
+<p>Point Nori-Causal at the dataset you're working on right now and see what drives your target. If you build something interesting, tell us on <a href="https://discord.gg/jpsXMXGza">Discord</a> or at <a href="mailto:insights@synthefy.com">insights@synthefy.com</a>.</p>
+<div class="cta">Want to try Nori on your own data? <a href="https://www.synthefy.com/contact">Contact us</a> or email <a href="mailto:insights@synthefy.com">insights@synthefy.com</a>, and we'll help you get set up.</div>
 
 <h2 id="next">What it can't do yet</h2>
 <ul class="steps">
